@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,6 +7,17 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script>
+        // Theme Auto-Detection Logic
+        (function() {
+            const hour = new Date().getHours();
+            const isDay = hour >= 6 && hour < 18;
+            if (isDay) {
+                document.documentElement.classList.remove('dark');
+            } else {
+                document.documentElement.classList.add('dark');
+            }
+        })();
+
         tailwind.config = { 
             darkMode: 'class', 
             theme: { 
@@ -46,7 +57,7 @@
             border-radius: 28px;
             transition: all 0.3s ease;
         }
-        .light .m3-card { background: #f3f4f9; border: 1px solid rgba(0,0,0,0.05); }
+        .light .m3-card, :not(.dark) .m3-card { background: #f3f4f9; border: 1px solid rgba(0,0,0,0.05); }
         .dark .m3-card { background: #222529; border: 1px solid rgba(255,255,255,0.05); }
 
         .format-container { 
@@ -157,7 +168,7 @@
                 <h4 class="text-sm font-bold uppercase tracking-wider">Invalid Times</h4>
             </div>
             <p class="text-sm opacity-80 leading-relaxed mb-6">
-                Both <span class="font-bold">Reporting</span> and <span class="font-bold">Chocks On</span> times are within the WOCL period (02:00 - 06:00).
+                Both <span class="font-bold">Reporting</span> and <span class="font-bold">Chocks On</span> times are within the WOCL period (02:00 - 06:00). All inputs have been reset.
             </p>
             <div class="flex justify-end">
                 <button onclick="closeError()" class="px-6 py-2 bg-md-primary dark:bg-md-darkPrimary text-md-onPrimary dark:text-md-onPrimaryContainer rounded-full font-medium">Acknowledge</button>
@@ -171,7 +182,7 @@
             <p class="text-[11px] font-medium uppercase tracking-[0.1em] opacity-60">Jehan’s Professional Calculator</p>
         </div>
         <button onclick="toggleTheme()" class="w-12 h-12 rounded-full flex items-center justify-center hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors">
-            <i id="themeIcon" class="fas fa-moon text-xl"></i>
+            <i id="themeIcon" class="fas fa-circle-half-stroke text-xl"></i>
         </button>
     </div>
 
@@ -318,10 +329,18 @@
             if(!r.value || !c.value) return;
             try {
                 const s = tToD(r.value); let rawE = tToD(c.value); let e = rawE; if(e<s) e+=24;
+                
+                // WOCL Period Check (02:00 - 06:00)
                 if((s>=2 && s<=6) && (rawE>=2 && rawE<=6)){
                     document.getElementById('errorModal').classList.add('active');
-                    r.value=''; c.value=''; res.classList.add('hidden'); return;
+                    r.value=''; c.value=''; 
+                    // RESET TO 1 on WOCL Violation
+                    lnd = 1; 
+                    document.getElementById('landingsCount').innerText = lnd;
+                    res.classList.add('hidden'); 
+                    return;
                 }
+                
                 res.classList.remove('hidden');
                 const aF = e - s;
                 const bL = {1:13, 2:13, 3:12.5, 4:12, 5:11.5, 6:11}; const bF = bL[lnd];
@@ -355,8 +374,8 @@
 
         function toggleTheme(){
             const h=document.documentElement; const i=document.getElementById('themeIcon');
-            if(h.classList.contains('dark')){ h.classList.remove('dark'); i.className='fas fa-moon'; }
-            else { h.classList.add('dark'); i.className='fas fa-sun'; }
+            if(h.classList.contains('dark')){ h.classList.remove('dark'); }
+            else { h.classList.add('dark'); }
         }
         function changeLnd(v){ lnd=Math.max(1,Math.min(6,lnd+v)); document.getElementById('landingsCount').innerText=lnd; calculate(); }
         function tToD(t){ const[h,m]=t.split(':').map(Number); return h+(m/60); }
