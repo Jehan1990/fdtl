@@ -129,10 +129,10 @@
         }
         .dark .highlight-bar { background: rgba(165, 200, 255, 0.1); }
 
-        .table-row-grid { display: grid; grid-template-columns: 1fr 1fr 1.5fr; text-align: center; padding: 12px 8px; }
+        .table-row-grid { display: grid; grid-template-columns: 1fr 1fr 1.5fr; text-align: center; padding: 14px 8px; }
     </style>
 </head>
-<body class="bg-md-surface dark:bg-md-darkSurface text-md-onSurface dark:text-md-darkOnSurface min-h-screen flex flex-col items-center p-4 font-sans" oncontextmenu="return false;">
+<body class="bg-md-surface dark:bg-md-darkSurface text-md-onSurface dark:text-md-darkOnSurface min-h-screen flex flex-col items-center p-4 md:p-8 font-sans" oncontextmenu="return false;">
 
     <div class="modal-overlay" id="timePickerModal">
         <div class="bw-picker-card w-full max-w-[300px] p-6">
@@ -160,106 +160,112 @@
                 Both <span class="font-bold">Reporting</span> and <span class="font-bold">Chocks On</span> times are within the WOCL period (02:00 - 06:00).
             </p>
             <div class="flex justify-end">
-                <button onclick="closeError()" class="px-6 py-2 bg-md-primary dark:bg-md-darkPrimary text-md-onPrimary dark:text-md-onPrimaryContainer rounded-full font-medium shadow-md active:scale-95 transition-all">
-                    Acknowledge
-                </button>
+                <button onclick="closeError()" class="px-6 py-2 bg-md-primary dark:bg-md-darkPrimary text-md-onPrimary dark:text-md-onPrimaryContainer rounded-full font-medium">Acknowledge</button>
             </div>
         </div>
     </div>
 
-    <div class="w-full max-w-md flex justify-end p-2">
-        <button onclick="toggleTheme()" class="w-10 h-10 rounded-full flex items-center justify-center hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors">
-            <i id="themeIcon" class="fas fa-moon text-lg"></i>
+    <div class="w-full max-w-6xl flex justify-between items-center mb-6">
+        <div>
+            <h1 class="text-2xl md:text-3xl font-bold tracking-tight text-md-primary dark:text-md-darkPrimary">FDTL <span class="italic">PRO</span></h1>
+            <p class="text-[11px] font-medium uppercase tracking-[0.1em] opacity-60">Jehan’s Professional Calculator</p>
+        </div>
+        <button onclick="toggleTheme()" class="w-12 h-12 rounded-full flex items-center justify-center hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors">
+            <i id="themeIcon" class="fas fa-moon text-xl"></i>
         </button>
     </div>
 
-    <div class="w-full max-w-md space-y-4">
-        <header class="text-center pb-2">
-            <h1 class="text-2xl font-bold tracking-tight text-md-primary dark:text-md-darkPrimary">FDTL <span class="italic">PRO</span></h1>
-            <p class="text-[11px] font-medium uppercase tracking-[0.1em] opacity-60">Jehan’s Professional Calculator</p>
-        </header>
-
-        <div class="m3-card p-6 shadow-sm">
-            <div class="space-y-5">
-                <div onclick="openPicker('reportTime')" class="relative group cursor-pointer border-b border-md-outline/30 pb-2">
-                    <label class="text-xs font-medium text-md-primary dark:text-md-darkPrimary block mb-1">Reporting Time</label>
-                    <div class="flex items-center">
-                        <i class="fas fa-clock mr-3 opacity-50"></i>
-                        <input type="text" id="reportTime" readonly placeholder="--:--" class="bg-transparent text-xl font-medium outline-none pointer-events-none">
-                    </div>
-                </div>
-
-                <div onclick="openPicker('chocksOn')" class="relative group cursor-pointer border-b border-md-outline/30 pb-2">
-                    <label class="text-xs font-medium text-md-primary dark:text-md-darkPrimary block mb-1">Chocks On</label>
-                    <div class="flex items-center">
-                        <i class="fas fa-plane-arrival mr-3 opacity-50"></i>
-                        <input type="text" id="chocksOn" readonly placeholder="--:--" class="bg-transparent text-xl font-medium outline-none pointer-events-none">
-                    </div>
-                </div>
-
-                <div class="bg-md-surfaceVariant/30 dark:bg-white/5 p-4 rounded-2xl">
-                    <label class="text-[11px] font-bold uppercase tracking-wider block mb-3 text-center opacity-70">Landings</label>
-                    <div class="flex items-center justify-between px-4">
-                        <button onclick="changeLnd(-1)" class="w-10 h-10 rounded-full bg-md-primaryContainer dark:bg-md-darkPrimaryContainer text-md-onPrimaryContainer dark:text-white flex items-center justify-center"><i class="fas fa-minus"></i></button>
-                        <span id="landingsCount" class="text-3xl font-bold mono">1</span>
-                        <button onclick="changeLnd(1)" class="w-10 h-10 rounded-full bg-md-primaryContainer dark:bg-md-darkPrimaryContainer text-md-onPrimaryContainer dark:text-white flex items-center justify-center"><i class="fas fa-plus"></i></button>
-                    </div>
-                </div>
-
-                <div id="results" class="hidden space-y-5 pt-4 border-t border-md-outline/10">
-                    <div class="format-container">
-                        <div id="toggleSlider" class="toggle-slider"></div>
-                        <button id="fmtHHMM" onclick="setFormat('HH:MM')" class="format-btn active">HH:MM</button>
-                        <button id="fmtDEC" onclick="setFormat('DEC')" class="format-btn">DEC</button>
-                    </div>
-
-                    <div id="statusBox" class="p-4 rounded-2xl flex items-center gap-4 transition-all">
-                        <div id="statusIcon" class="text-2xl"></div>
-                        <div class="flex-1">
-                            <h2 id="statusTitle" class="text-lg font-bold uppercase tracking-tight">--</h2>
-                        </div>
-                        <button onclick="shareReport()" class="w-10 h-10 rounded-full bg-black/5 dark:bg-white/5 flex items-center justify-center">
-                            <i class="fas fa-share-nodes text-sm"></i>
-                        </button>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-3">
-                        <div class="p-4 rounded-2xl bg-white dark:bg-white/5 border border-md-outline/10 text-center">
-                            <p class="text-[10px] font-medium opacity-60 uppercase">Actual FDP</p>
-                            <p id="resActual" class="text-lg font-bold mono">--:--</p>
-                        </div>
-                        <div class="p-4 rounded-2xl bg-white dark:bg-white/5 border border-md-outline/10 text-center">
-                            <p class="text-[10px] font-medium opacity-60 uppercase">Max Allowed</p>
-                            <p id="resMax" class="text-lg font-bold mono text-md-primary dark:text-md-darkPrimary">--:--</p>
+    <main class="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+        
+        <div class="space-y-6">
+            <div class="m3-card p-6 md:p-8 shadow-sm">
+                <div class="space-y-6">
+                    <div onclick="openPicker('reportTime')" class="relative group cursor-pointer border-b border-md-outline/30 pb-3">
+                        <label class="text-sm font-semibold text-md-primary dark:text-md-darkPrimary block mb-1">Reporting Time</label>
+                        <div class="flex items-center">
+                            <i class="fas fa-clock mr-3 opacity-50"></i>
+                            <input type="text" id="reportTime" readonly placeholder="--:--" class="bg-transparent text-2xl font-medium outline-none pointer-events-none">
                         </div>
                     </div>
-                    
-                    <div class="p-3 rounded-xl bg-md-primary/5 dark:bg-md-darkPrimary/5 text-[11px] space-y-2">
-                        <div class="flex justify-between"><span>Base FDP Limit:</span><span id="resBase" class="font-bold">--:--</span></div>
-                        <div class="flex justify-between opacity-70">
-                            <span>WOCL Penalty:</span>
-                            <span id="resPenalty" class="font-bold">--:--</span>
+
+                    <div onclick="openPicker('chocksOn')" class="relative group cursor-pointer border-b border-md-outline/30 pb-3">
+                        <label class="text-sm font-semibold text-md-primary dark:text-md-darkPrimary block mb-1">Chocks On</label>
+                        <div class="flex items-center">
+                            <i class="fas fa-plane-arrival mr-3 opacity-50"></i>
+                            <input type="text" id="chocksOn" readonly placeholder="--:--" class="bg-transparent text-2xl font-medium outline-none pointer-events-none">
+                        </div>
+                    </div>
+
+                    <div class="bg-md-surfaceVariant/30 dark:bg-white/5 p-5 rounded-3xl">
+                        <label class="text-[12px] font-bold uppercase tracking-widest block mb-4 text-center opacity-70">Landings</label>
+                        <div class="flex items-center justify-between px-6">
+                            <button onclick="changeLnd(-1)" class="w-12 h-12 rounded-full bg-md-primaryContainer dark:bg-md-darkPrimaryContainer text-md-onPrimaryContainer dark:text-white flex items-center justify-center text-lg"><i class="fas fa-minus"></i></button>
+                            <span id="landingsCount" class="text-4xl font-bold mono">1</span>
+                            <button onclick="changeLnd(1)" class="w-12 h-12 rounded-full bg-md-primaryContainer dark:bg-md-darkPrimaryContainer text-md-onPrimaryContainer dark:text-white flex items-center justify-center text-lg"><i class="fas fa-plus"></i></button>
+                        </div>
+                    </div>
+
+                    <div id="results" class="hidden space-y-6 pt-6 border-t border-md-outline/10">
+                        <div class="format-container">
+                            <div id="toggleSlider" class="toggle-slider"></div>
+                            <button id="fmtHHMM" onclick="setFormat('HH:MM')" class="format-btn active">HH:MM</button>
+                            <button id="fmtDEC" onclick="setFormat('DEC')" class="format-btn">DEC</button>
+                        </div>
+
+                        <div id="statusBox" class="p-5 rounded-3xl flex items-center gap-4 transition-all">
+                            <div id="statusIcon" class="text-3xl"></div>
+                            <div class="flex-1">
+                                <h2 id="statusTitle" class="text-xl font-bold uppercase tracking-tight">--</h2>
+                            </div>
+                            <button onclick="shareReport()" class="w-12 h-12 rounded-full bg-black/5 dark:bg-white/5 flex items-center justify-center">
+                                <i class="fas fa-share-nodes text-lg"></i>
+                            </button>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="p-5 rounded-3xl bg-white dark:bg-white/5 border border-md-outline/10 text-center">
+                                <p class="text-[11px] font-bold opacity-60 uppercase mb-1">Actual FDP</p>
+                                <p id="resActual" class="text-2xl font-bold mono">--:--</p>
+                            </div>
+                            <div class="p-5 rounded-3xl bg-white dark:bg-white/5 border border-md-outline/10 text-center">
+                                <p class="text-[11px] font-bold opacity-60 uppercase mb-1">Max Allowed</p>
+                                <p id="resMax" class="text-2xl font-bold mono text-md-primary dark:text-md-darkPrimary">--:--</p>
+                            </div>
+                        </div>
+                        
+                        <div class="p-5 rounded-3xl bg-md-primary/5 dark:bg-md-darkPrimary/5 space-y-3">
+                            <div class="flex justify-between text-base">
+                                <span class="opacity-80">Base FDP Limit:</span>
+                                <span id="resBase" class="font-bold text-lg">--:--</span>
+                            </div>
+                            <div class="flex justify-between text-base">
+                                <span class="opacity-80">WOCL Penalty:</span>
+                                <span id="resPenalty" class="font-bold text-lg">--:--</span>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="m3-card p-6 mb-8">
-            <h3 class="text-[11px] font-bold opacity-60 uppercase tracking-widest mb-4 text-center">DGCA Reference Table</h3>
-            <div class="text-[11px]">
-                <div class="table-row-grid font-bold opacity-40 border-b border-md-outline/10 mb-1">
+        <div class="m3-card p-6 md:p-8">
+            <h3 class="text-[13px] font-bold opacity-60 uppercase tracking-[0.2em] mb-6 text-center">DGCA Reference Table</h3>
+            <div class="space-y-1">
+                <div class="table-row-grid font-bold opacity-40 border-b border-md-outline/10 mb-2 text-sm">
                     <span>LDG</span><span>MAX FT</span><span>MAX FDP</span>
                 </div>
-                <div class="table-row-grid"><span>1</span><span>10:00</span><span class="font-bold">13:00</span></div>
-                <div class="table-row-grid bg-md-primary/5 rounded-lg"><span>2</span><span>09:00</span><span class="font-bold">13:00</span></div>
-                <div class="table-row-grid"><span>3</span><span>08:00</span><span class="font-bold">12:30</span></div>
-                <div class="table-row-grid bg-md-primary/5 rounded-lg"><span>4</span><span>08:00</span><span class="font-bold">12:00</span></div>
-                <div class="table-row-grid"><span>5</span><span>08:00</span><span class="font-bold">11:30</span></div>
-                <div class="table-row-grid bg-md-primary/5 rounded-lg"><span>6</span><span>08:00</span><span class="font-bold">11:00</span></div>
+                <div class="table-row-grid text-base md:text-lg"><span>1</span><span>10:00</span><span class="font-bold text-md-primary dark:text-md-darkPrimary">13:00</span></div>
+                <div class="table-row-grid bg-md-primary/5 rounded-xl text-base md:text-lg"><span>2</span><span>09:00</span><span class="font-bold text-md-primary dark:text-md-darkPrimary">13:00</span></div>
+                <div class="table-row-grid text-base md:text-lg"><span>3</span><span>08:00</span><span class="font-bold text-md-primary dark:text-md-darkPrimary">12:30</span></div>
+                <div class="table-row-grid bg-md-primary/5 rounded-xl text-base md:text-lg"><span>4</span><span>08:00</span><span class="font-bold text-md-primary dark:text-md-darkPrimary">12:00</span></div>
+                <div class="table-row-grid text-base md:text-lg"><span>5</span><span>08:00</span><span class="font-bold text-md-primary dark:text-md-darkPrimary">11:30</span></div>
+                <div class="table-row-grid bg-md-primary/5 rounded-xl text-base md:text-lg"><span>6</span><span>08:00</span><span class="font-bold text-md-primary dark:text-md-darkPrimary">11:00</span></div>
+            </div>
+            <div class="mt-8 p-4 rounded-2xl bg-md-surfaceVariant/20 text-[12px] opacity-60 leading-relaxed italic">
+                * Max Flight Time (FT) and Flight Duty Period (FDP) limits as per latest DGCA Civil Aviation Requirements.
             </div>
         </div>
-    </div>
+    </main>
 
     <script>
         let lnd=1; let lastResult={}; let displayFormat='HH:MM'; let activeInputId='';
@@ -333,14 +339,14 @@
                 
                 const pEl = document.getElementById('resPenalty');
                 pEl.innerText = p > 0 ? `-${formatValue(p)}` : formatValue(p);
-                pEl.className = p > 0 ? "font-bold text-red-500" : "font-bold";
+                pEl.className = p > 0 ? "font-bold text-lg text-red-500" : "font-bold text-lg";
                 
                 const box = document.getElementById('statusBox'), tit = document.getElementById('statusTitle'), ic = document.getElementById('statusIcon');
                 if(iL){
-                    box.className = "p-4 rounded-2xl bg-green-500/10 border border-green-500/20 flex items-center gap-4 text-green-600 dark:text-green-400";
+                    box.className = "p-5 rounded-3xl bg-green-500/10 border border-green-500/20 flex items-center gap-4 text-green-600 dark:text-green-400";
                     tit.innerText = "Legal"; ic.innerHTML = '<i class="fas fa-check-circle"></i>';
                 } else {
-                    box.className = "p-4 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center gap-4 text-red-600 dark:text-red-400";
+                    box.className = "p-5 rounded-3xl bg-red-500/10 border border-red-500/20 flex items-center gap-4 text-red-600 dark:text-red-400";
                     tit.innerText = "Illegal"; ic.innerHTML = '<i class="fas fa-triangle-exclamation"></i>';
                 }
                 lastResult={report:r.value, chocks:c.value, actual:formatValue(aF), max:formatValue(al), status: iL?"✅ LEGAL":"❌ ILLEGAL"};
