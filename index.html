@@ -7,7 +7,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script>
-        // Theme Auto-Detection Logic (Day: 06:00-18:00)
         (function() {
             const hour = new Date().getHours();
             const isDay = hour >= 6 && hour < 18;
@@ -123,9 +122,27 @@
             mask-image: linear-gradient(to bottom, transparent, black 40%, black 60%, transparent);
             -webkit-mask-image: linear-gradient(to bottom, transparent, black 40%, black 60%, transparent);
         }
-        .wheel { flex: 1; height: 100%; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; }
+        .wheel { 
+            flex: 1; 
+            height: 100%; 
+            overflow-y: scroll; 
+            scroll-snap-type: y mandatory; 
+            scrollbar-width: none; 
+            overscroll-behavior: contain; /* Prevents page shaking */
+            -webkit-overflow-scrolling: touch; /* Smooth iOS momentum */
+        }
         .wheel::-webkit-scrollbar { display: none; }
-        .wheel div { height: 40px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; scroll-snap-align: center; opacity: 0.3; }
+        .wheel div { 
+            height: 40px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 1.5rem; 
+            scroll-snap-align: center; 
+            opacity: 0.3; 
+            transition: opacity 0.1s linear, transform 0.1s linear; /* Smooth visual transition */
+            will-change: transform, opacity;
+        }
 
         .highlight-bar { 
             position: absolute; 
@@ -150,9 +167,9 @@
             <h4 id="pickerTitle" class="text-sm font-medium tracking-wide mb-6 opacity-70">Select Time</h4>
             <div class="time-wheels relative mb-6">
                 <div class="highlight-bar"></div>
-                <div class="wheel" id="hoursWheel" onscroll="updateWheelUI(this)"></div>
+                <div class="wheel" id="hoursWheel" onscroll="throttledUpdateWheel(this)"></div>
                 <div class="text-2xl font-bold px-2">:</div>
-                <div class="wheel" id="minsWheel" onscroll="updateWheelUI(this)"></div>
+                <div class="wheel" id="minsWheel" onscroll="throttledUpdateWheel(this)"></div>
             </div>
             <div class="flex justify-end gap-2">
                 <button onclick="document.getElementById('timePickerModal').classList.remove('active')" class="px-4 py-2 text-md-primary dark:text-md-darkPrimary font-medium">Cancel</button>
@@ -272,9 +289,6 @@
                 <div class="table-row-grid text-base md:text-lg"><span>5</span><span>08:00</span><span class="font-bold text-md-primary dark:text-md-darkPrimary">11:30</span></div>
                 <div class="table-row-grid bg-md-primary/5 rounded-xl text-base md:text-lg"><span>6</span><span>08:00</span><span class="font-bold text-md-primary dark:text-md-darkPrimary">11:00</span></div>
             </div>
-            <div class="mt-8 p-4 rounded-2xl bg-md-surfaceVariant/20 text-[12px] opacity-60 leading-relaxed italic">
-                * Max Flight Time (FT) and Flight Duty Period (FDP) limits as per latest DGCA Civil Aviation Requirements.
-            </div>
         </div>
     </main>
 
@@ -292,12 +306,24 @@
         }
         initWheel(hWheel, 24); initWheel(mWheel, 60);
 
+        // Prevents UI jitter by only updating once per frame
+        let isUpdating = false;
+        function throttledUpdateWheel(w) {
+            if (isUpdating) return;
+            isUpdating = true;
+            requestAnimationFrame(() => {
+                updateWheelUI(w);
+                isUpdating = false;
+            });
+        }
+
         function updateWheelUI(w) {
             const idx = Math.round(w.scrollTop / 40);
             const items = w.querySelectorAll('div');
             items.forEach((item, i) => { 
-                item.style.opacity = (i === idx + 2) ? '1' : '0.3';
-                item.style.transform = (i === idx + 2) ? 'scale(1.2)' : 'scale(1)';
+                const isSelected = (i === idx + 2);
+                item.style.opacity = isSelected ? '1' : '0.3';
+                item.style.transform = isSelected ? 'scale(1.2)' : 'scale(1)';
             });
         }
 
@@ -324,59 +350,50 @@
 
         function closeError() { document.getElementById('errorModal').classList.remove('active'); }
 
+        function smartFloorMin(dec) {
+            const totalMins = dec * 60;
+            if (Math.abs(totalMins - Math.round(totalMins)) < 0.00001) {
+                return Math.round(totalMins) / 60;
+            }
+            return Math.floor(totalMins) / 60;
+        }
+
         function calculate(){
             const r=document.getElementById('reportTime'), c=document.getElementById('chocksOn'), res=document.getElementById('results');
             if(!r.value || !c.value) return;
             try {
-                const s = tToD(r.value); let rawE = tToD(c.value); let e = rawE; if(e<s) e+=24;
-                
-                // WOCL Period Check (02:00 - 06:00)
-                if((s>=2 && s<=6) && (rawE>=2 && rawE<=6)){
+                const s = tToD(r.value); 
+                let rawE = tToD(c.value); 
+                let e = rawE; 
+                if(e < s) e += 24;
+                if((s >= 2 && s <= 6) && (rawE >= 2 && rawE <= 6)){
                     document.getElementById('errorModal').classList.add('active');
-                    r.value=''; c.value=''; 
-                    lnd = 1; 
+                    r.value=''; c.value=''; lnd = 1; 
                     document.getElementById('landingsCount').innerText = lnd;
-                    res.classList.add('hidden'); 
-                    return;
+                    res.classList.add('hidden'); return;
                 }
-                
                 res.classList.remove('hidden');
-                const aF = e - s;
-                const bL = {1:13, 2:13, 3:12.5, 4:12, 5:11.5, 6:11}; const bF = bL[lnd];
-                
-                // Updated WOCL Penalty Logic
+                const aF = smartFloorMin(e - s);
+                const bL = {1:13, 2:13, 3:12.5, 4:12, 5:11.5, 6:11}; 
+                const bF = bL[lnd];
                 let p = 0;
                 if(s >= 2 && s < 6) {
-                    // Start in WOCL: full encroachment vs limit
-                    let o = Math.max(0, Math.min(e, 6) - Math.max(s, 2));
-                    p = Math.floor(Math.min(o, 2) * 60) / 60;
-                } else if(e > 26 || (e > 2 && e < 6 && s > 6)) { 
-                    // FDP ends in WOCL (either same day or next day)
-                    // Check encroachment from 02:00 start point
+                    p = Math.min(Math.min(e, 6) - s, 2); 
+                } else {
                     let encroachment = 0;
-                    if(e > 26) { // Next day encroachment
-                        encroachment = e - 26; 
-                    } else if (e > 2 && e < 6) { // Same day late arrival (rare but possible logic flow)
-                        encroachment = e - 2;
-                    }
-                    
-                    if(encroachment > 0) {
-                        // 50% penalty, floor the minute (0.5 mins = 0 mins)
-                        p = Math.floor((encroachment / 2) * 60) / 60;
-                    }
+                    if (e > 26) encroachment = Math.min(e, 30) - 26; 
+                    else if (e > 2 && e < 6 && s < 2) encroachment = e - 2;
+                    if(encroachment > 0) p = encroachment * 0.5;
                 }
-                
-                const al = bF - p;
-                const iL = aF <= (al + 0.001);
-                
+                p = smartFloorMin(p);
+                const al = smartFloorMin(bF - p);
+                const iL = aF <= (al + 0.00001);
                 document.getElementById('resActual').innerText = formatValue(aF);
                 document.getElementById('resMax').innerText = formatValue(al);
                 document.getElementById('resBase').innerText = formatValue(bF);
-                
                 const pEl = document.getElementById('resPenalty');
                 pEl.innerText = p > 0 ? `-${formatValue(p)}` : formatValue(p);
                 pEl.className = p > 0 ? "font-bold text-lg text-red-500" : "font-bold text-lg";
-                
                 const box = document.getElementById('statusBox'), tit = document.getElementById('statusTitle'), ic = document.getElementById('statusIcon');
                 if(iL){
                     box.className = "p-5 rounded-3xl bg-green-500/10 border border-green-500/20 flex items-center gap-4 text-green-600 dark:text-green-400";
@@ -391,15 +408,14 @@
 
         function toggleTheme(){
             const h=document.documentElement;
-            if(h.classList.contains('dark')){ h.classList.remove('dark'); }
-            else { h.classList.add('dark'); }
+            h.classList.contains('dark') ? h.classList.remove('dark') : h.classList.add('dark');
         }
         function changeLnd(v){ lnd=Math.max(1,Math.min(6,lnd+v)); document.getElementById('landingsCount').innerText=lnd; calculate(); }
         function tToD(t){ const[h,m]=t.split(':').map(Number); return h+(m/60); }
         function formatValue(d) {
             if(displayFormat==='DEC') return d.toFixed(2);
-            const h=Math.floor(d), m=Math.floor(Math.round(d * 60) % 60);
-            return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+            const totalMins = Math.round(d * 60);
+            return `${String(Math.floor(totalMins / 60)).padStart(2,'0')}:${String(totalMins % 60).padStart(2,'0')}`;
         }
         function setFormat(fmt) {
             displayFormat = fmt;
