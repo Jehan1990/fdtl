@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script>
-        // Theme Auto-Detection Logic
+        // Theme Auto-Detection Logic (Day: 06:00-18:00)
         (function() {
             const hour = new Date().getHours();
             const isDay = hour >= 6 && hour < 18;
@@ -334,7 +334,6 @@
                 if((s>=2 && s<=6) && (rawE>=2 && rawE<=6)){
                     document.getElementById('errorModal').classList.add('active');
                     r.value=''; c.value=''; 
-                    // RESET TO 1 on WOCL Violation
                     lnd = 1; 
                     document.getElementById('landingsCount').innerText = lnd;
                     res.classList.add('hidden'); 
@@ -345,9 +344,27 @@
                 const aF = e - s;
                 const bL = {1:13, 2:13, 3:12.5, 4:12, 5:11.5, 6:11}; const bF = bL[lnd];
                 
-                let o = Math.max(0, Math.min(e, 6) - Math.max(s, 2)) + Math.max(0, Math.min(e, 30) - Math.max(s, 26));
-                let p_raw = 0; if(s >= 2 && s < 6){ p_raw = Math.min(o, 2); } else if(o > 0){ p_raw = o * 0.5; }
-                const p = Math.floor(p_raw * 60) / 60;
+                // Updated WOCL Penalty Logic
+                let p = 0;
+                if(s >= 2 && s < 6) {
+                    // Start in WOCL: full encroachment vs limit
+                    let o = Math.max(0, Math.min(e, 6) - Math.max(s, 2));
+                    p = Math.floor(Math.min(o, 2) * 60) / 60;
+                } else if(e > 26 || (e > 2 && e < 6 && s > 6)) { 
+                    // FDP ends in WOCL (either same day or next day)
+                    // Check encroachment from 02:00 start point
+                    let encroachment = 0;
+                    if(e > 26) { // Next day encroachment
+                        encroachment = e - 26; 
+                    } else if (e > 2 && e < 6) { // Same day late arrival (rare but possible logic flow)
+                        encroachment = e - 2;
+                    }
+                    
+                    if(encroachment > 0) {
+                        // 50% penalty, floor the minute (0.5 mins = 0 mins)
+                        p = Math.floor((encroachment / 2) * 60) / 60;
+                    }
+                }
                 
                 const al = bF - p;
                 const iL = aF <= (al + 0.001);
@@ -373,7 +390,7 @@
         }
 
         function toggleTheme(){
-            const h=document.documentElement; const i=document.getElementById('themeIcon');
+            const h=document.documentElement;
             if(h.classList.contains('dark')){ h.classList.remove('dark'); }
             else { h.classList.add('dark'); }
         }
@@ -381,7 +398,7 @@
         function tToD(t){ const[h,m]=t.split(':').map(Number); return h+(m/60); }
         function formatValue(d) {
             if(displayFormat==='DEC') return d.toFixed(2);
-            const h=Math.floor(d), m=Math.round((d-h)*60);
+            const h=Math.floor(d), m=Math.floor(Math.round(d * 60) % 60);
             return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
         }
         function setFormat(fmt) {
