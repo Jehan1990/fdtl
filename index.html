@@ -13,214 +13,363 @@
                 extend: { 
                     fontFamily: { sans: ['Outfit', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'] }, 
                     colors: { 
-                        brand: { 
-                            DEFAULT: '#1e3a8a', // Navy Blue
-                            light: '#3b82f6' 
-                        }, 
-                        florence: '#48a67d', // Florence Green
-                        fyellow: '#FFD700',  // Florence Yellow
-                        midnight: '#0a192f'  // Deep Navy Background
+                        md: {
+                            primary: '#005fb0',
+                            onPrimary: '#ffffff',
+                            primaryContainer: '#d4e3ff',
+                            onPrimaryContainer: '#001c3b',
+                            surface: '#fdfbff',
+                            onSurface: '#1a1c1e',
+                            surfaceVariant: '#e0e2ec',
+                            onSurfaceVariant: '#44474e',
+                            outline: '#74777f',
+                            darkSurface: '#1a1c1e',
+                            darkOnSurface: '#e2e2e6',
+                            darkPrimary: '#a5c8ff',
+                            darkPrimaryContainer: '#004786'
+                        }
                     } 
                 } 
             } 
         }
     </script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&family=JetBrains+Mono&display=swap');
-        body { transition: background-color 0.3s ease, color 0.3s ease; -webkit-user-select: none; user-select: none; }
-        .glass { backdrop-filter: blur(16px); }
-        .light .glass { background: rgba(255, 255, 255, 0.9); border: 1px solid rgba(30, 58, 138, 0.1); }
-        .dark .glass { background: rgba(10, 25, 47, 0.7); border: 1px solid rgba(255, 215, 0, 0.1); }
-        #customAlert { display: none; }
-        .alert-overlay { position: fixed; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center; padding: 1.5rem; }
-        input[type="time"]::-webkit-calendar-picker-indicator { cursor: pointer; }
-        .dark input[type="time"]::-webkit-calendar-picker-indicator { filter: invert(0.8) sepia(1) saturate(5) hue-rotate(10deg); }
-        .table-row-grid { display: grid; grid-template-columns: 1fr 1fr 1.5fr; text-align: center; padding: 8px 0; }
-        .theme-toggle-wrapper { width: 100%; display: flex; justify-content: flex-end; padding: 1rem 1rem 0 0; position: absolute; top: 0; }
-        @media print { body { display: none !important; } }
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700&family=JetBrains+Mono&display=swap');
         
-        .format-toggle { display: flex; background: rgba(0,0,0,0.1); padding: 2px; border-radius: 12px; }
-        .dark .format-toggle { background: rgba(255,255,255,0.05); }
-        .format-btn { flex: 1; padding: 4px 8px; border-radius: 10px; font-size: 9px; font-weight: 900; transition: all 0.2s; }
-        .format-btn.active { background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); color: #1e3a8a; }
-        .dark .format-btn.active { background: #FFD700; color: #0a192f; }
+        body { 
+            transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1); 
+            -webkit-user-select: none; 
+            user-select: none; 
+        }
+
+        .m3-card {
+            border-radius: 28px;
+            transition: all 0.3s ease;
+        }
+        .light .m3-card { background: #f3f4f9; border: 1px solid rgba(0,0,0,0.05); }
+        .dark .m3-card { background: #222529; border: 1px solid rgba(255,255,255,0.05); }
+
+        .format-container { 
+            background: #e0e2ec; 
+            border-radius: 100px; 
+            padding: 4px; 
+            display: flex; 
+            position: relative; 
+            width: fit-content;
+            margin: 0 auto;
+        }
+        .dark .format-container { background: #44474e; }
+        .format-btn { 
+            padding: 8px 20px; 
+            font-size: 12px; 
+            font-weight: 500; 
+            color: #44474e; 
+            position: relative; 
+            z-index: 2; 
+        }
+        .dark .format-btn { color: #c4c6d0; }
+        .format-btn.active { color: #ffffff; }
+        .dark .format-btn.active { color: #00315e; }
+        
+        .toggle-slider { 
+            position: absolute; 
+            height: calc(100% - 8px); 
+            width: calc(50% - 4px); 
+            background: #005fb0; 
+            border-radius: 100px; 
+            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1); 
+            z-index: 1; 
+        }
+        .dark .toggle-slider { background: #a5c8ff; }
+        .toggle-dec { transform: translateX(100%); }
+
+        .modal-overlay { 
+            position: fixed; 
+            inset: 0; 
+            z-index: 100; 
+            display: none; 
+            align-items: center; 
+            justify-content: center; 
+            background: rgba(0,0,0,0.4); 
+            backdrop-filter: blur(4px);
+        }
+        .modal-overlay.active { display: flex; }
+        
+        .bw-picker-card { 
+            background: #fdfbff; 
+            color: #1a1c1e; 
+            border-radius: 28px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+        }
+        .dark .bw-picker-card { background: #2e3135; color: #e2e2e6; }
+
+        .time-wheels { 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 200px; 
+            overflow: hidden; 
+            mask-image: linear-gradient(to bottom, transparent, black 40%, black 60%, transparent);
+            -webkit-mask-image: linear-gradient(to bottom, transparent, black 40%, black 60%, transparent);
+        }
+        .wheel { flex: 1; height: 100%; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; }
+        .wheel::-webkit-scrollbar { display: none; }
+        .wheel div { height: 40px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; scroll-snap-align: center; opacity: 0.3; }
+
+        .highlight-bar { 
+            position: absolute; 
+            top: 50%; 
+            left: 50%; 
+            transform: translate(-50%, -50%); 
+            width: 80%; 
+            height: 44px; 
+            background: rgba(0, 95, 176, 0.1); 
+            border-radius: 8px;
+            z-index: -1; 
+        }
+        .dark .highlight-bar { background: rgba(165, 200, 255, 0.1); }
+
+        .table-row-grid { display: grid; grid-template-columns: 1fr 1fr 1.5fr; text-align: center; padding: 12px 8px; }
     </style>
 </head>
-<body class="bg-slate-50 dark:bg-midnight text-slate-900 dark:text-white min-h-screen flex flex-col items-center p-4 relative font-sans" oncontextmenu="return false;">
+<body class="bg-md-surface dark:bg-md-darkSurface text-md-onSurface dark:text-md-darkOnSurface min-h-screen flex flex-col items-center p-4 font-sans" oncontextmenu="return false;">
 
-    <div id="customAlert" class="alert-overlay backdrop-blur-md">
-        <div class="glass alert-card w-full max-w-xs rounded-[2.5rem] p-8 shadow-2xl border-2 border-red-500 text-center">
-            <div class="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 bg-red-500/10 text-red-500">
-                <i class="fas fa-clock text-2xl"></i>
+    <div class="modal-overlay" id="timePickerModal">
+        <div class="bw-picker-card w-full max-w-[300px] p-6">
+            <h4 id="pickerTitle" class="text-sm font-medium tracking-wide mb-6 opacity-70">Select Time</h4>
+            <div class="time-wheels relative mb-6">
+                <div class="highlight-bar"></div>
+                <div class="wheel" id="hoursWheel" onscroll="updateWheelUI(this)"></div>
+                <div class="text-2xl font-bold px-2">:</div>
+                <div class="wheel" id="minsWheel" onscroll="updateWheelUI(this)"></div>
             </div>
-            <h3 class="text-lg font-black uppercase tracking-tight mb-2 text-red-500">Invalid Time</h3>
-            <p class="text-[11px] leading-relaxed font-bold opacity-80 uppercase mb-6 px-2">INVALID TIME AS BOTH TIMES ARE IN WOCL PERIOD</p>
-            <button onclick="closeAlert()" class="w-full py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all active:scale-95 shadow-lg bg-red-500 text-white">Acknowledge</button>
+            <div class="flex justify-end gap-2">
+                <button onclick="document.getElementById('timePickerModal').classList.remove('active')" class="px-4 py-2 text-md-primary dark:text-md-darkPrimary font-medium">Cancel</button>
+                <button onclick="confirmTime()" class="px-6 py-2 bg-md-primary dark:bg-md-darkPrimary text-md-onPrimary dark:text-md-onPrimaryContainer rounded-full font-medium">Set</button>
+            </div>
         </div>
     </div>
 
-    <div class="theme-toggle-wrapper">
-        <button onclick="toggleTheme()" class="w-12 h-12 rounded-2xl glass flex items-center justify-center shadow-lg hover:scale-105 active:scale-95">
-            <i id="themeIcon" class="fas fa-moon text-brand dark:text-fyellow"></i>
+    <div class="modal-overlay" id="errorModal">
+        <div class="bw-picker-card w-full max-w-[300px] p-6 border-t-4 border-red-500">
+            <div class="flex items-center gap-3 mb-4 text-red-600 dark:text-red-400">
+                <i class="fas fa-circle-exclamation text-xl"></i>
+                <h4 class="text-sm font-bold uppercase tracking-wider">Invalid Times</h4>
+            </div>
+            <p class="text-sm opacity-80 leading-relaxed mb-6">
+                Both <span class="font-bold">Reporting</span> and <span class="font-bold">Chocks On</span> times are within the WOCL period (02:00 - 06:00).
+            </p>
+            <div class="flex justify-end">
+                <button onclick="closeError()" class="px-6 py-2 bg-md-primary dark:bg-md-darkPrimary text-md-onPrimary dark:text-md-onPrimaryContainer rounded-full font-medium shadow-md active:scale-95 transition-all">
+                    Acknowledge
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="w-full max-w-md flex justify-end p-2">
+        <button onclick="toggleTheme()" class="w-10 h-10 rounded-full flex items-center justify-center hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors">
+            <i id="themeIcon" class="fas fa-moon text-lg"></i>
         </button>
     </div>
 
-    <div class="w-full max-w-md space-y-6 mt-12">
-        <header class="text-center space-y-1">
-            <h1 class="text-3xl font-black italic tracking-tighter uppercase">FDTL <span class="text-brand dark:text-fyellow">PRO</span></h1>
-            <p class="text-brand dark:text-fyellow/60 text-[11px] font-bold uppercase tracking-[0.12em]">Jehan’s FDTL Calculator</p>
+    <div class="w-full max-w-md space-y-4">
+        <header class="text-center pb-2">
+            <h1 class="text-2xl font-bold tracking-tight text-md-primary dark:text-md-darkPrimary">FDTL <span class="italic">PRO</span></h1>
+            <p class="text-[11px] font-medium uppercase tracking-[0.1em] opacity-60">Jehan’s Professional Calculator</p>
         </header>
 
-        <div class="glass rounded-[2.5rem] p-6 md:p-8 shadow-2xl">
+        <div class="m3-card p-6 shadow-sm">
             <div class="space-y-5">
-                <div class="group">
-                    <label class="text-[10px] font-black text-brand dark:text-fyellow uppercase tracking-widest ml-1 mb-2 block">Reporting Time</label>
-                    <div class="flex items-center bg-white dark:bg-slate-900/50 p-4 rounded-2xl border border-slate-200 dark:border-fyellow/20">
-                        <i class="fas fa-clock-rotate-left mr-3 text-brand dark:text-fyellow"></i>
-                        <input type="time" id="reportTime" oninput="calculate()" class="w-full bg-transparent text-2xl font-bold mono outline-none">
+                <div onclick="openPicker('reportTime')" class="relative group cursor-pointer border-b border-md-outline/30 pb-2">
+                    <label class="text-xs font-medium text-md-primary dark:text-md-darkPrimary block mb-1">Reporting Time</label>
+                    <div class="flex items-center">
+                        <i class="fas fa-clock mr-3 opacity-50"></i>
+                        <input type="text" id="reportTime" readonly placeholder="--:--" class="bg-transparent text-xl font-medium outline-none pointer-events-none">
                     </div>
                 </div>
 
-                <div class="group">
-                    <label class="text-[10px] font-black text-brand dark:text-fyellow uppercase tracking-widest ml-1 mb-2 block">Chocks On</label>
-                    <div class="flex items-center bg-white dark:bg-slate-900/50 p-4 rounded-2xl border border-slate-200 dark:border-fyellow/20">
-                        <i class="fas fa-plane-arrival mr-3 text-brand dark:text-fyellow"></i>
-                        <input type="time" id="chocksOn" oninput="calculate()" class="w-full bg-transparent text-2xl font-bold mono outline-none">
+                <div onclick="openPicker('chocksOn')" class="relative group cursor-pointer border-b border-md-outline/30 pb-2">
+                    <label class="text-xs font-medium text-md-primary dark:text-md-darkPrimary block mb-1">Chocks On</label>
+                    <div class="flex items-center">
+                        <i class="fas fa-plane-arrival mr-3 opacity-50"></i>
+                        <input type="text" id="chocksOn" readonly placeholder="--:--" class="bg-transparent text-xl font-medium outline-none pointer-events-none">
                     </div>
                 </div>
 
-                <div class="bg-slate-100/50 dark:bg-slate-900/50 p-4 rounded-2xl border border-transparent dark:border-fyellow/10">
-                    <label class="text-[10px] font-black text-brand dark:text-fyellow uppercase tracking-widest block mb-3 text-center">Number of Landings</label>
+                <div class="bg-md-surfaceVariant/30 dark:bg-white/5 p-4 rounded-2xl">
+                    <label class="text-[11px] font-bold uppercase tracking-wider block mb-3 text-center opacity-70">Landings</label>
                     <div class="flex items-center justify-between px-4">
-                        <button onclick="changeLnd(-1)" class="w-12 h-12 rounded-xl bg-white dark:bg-fyellow/10 text-brand dark:text-fyellow"><i class="fas fa-minus"></i></button>
-                        <span id="landingsCount" class="text-4xl font-black mono text-brand dark:text-fyellow">1</span>
-                        <button onclick="changeLnd(1)" class="w-12 h-12 rounded-xl bg-white dark:bg-fyellow/10 text-brand dark:text-fyellow"><i class="fas fa-plus"></i></button>
+                        <button onclick="changeLnd(-1)" class="w-10 h-10 rounded-full bg-md-primaryContainer dark:bg-md-darkPrimaryContainer text-md-onPrimaryContainer dark:text-white flex items-center justify-center"><i class="fas fa-minus"></i></button>
+                        <span id="landingsCount" class="text-3xl font-bold mono">1</span>
+                        <button onclick="changeLnd(1)" class="w-10 h-10 rounded-full bg-md-primaryContainer dark:bg-md-darkPrimaryContainer text-md-onPrimaryContainer dark:text-white flex items-center justify-center"><i class="fas fa-plus"></i></button>
                     </div>
                 </div>
 
-                <div id="results" class="hidden space-y-4">
-                    <div class="flex justify-center">
-                        <div class="format-toggle w-48">
-                            <button id="fmtHHMM" onclick="setFormat('HH:MM')" class="format-btn active uppercase">HH:MM</button>
-                            <button id="fmtDEC" onclick="setFormat('DEC')" class="format-btn uppercase">Decimal</button>
-                        </div>
+                <div id="results" class="hidden space-y-5 pt-4 border-t border-md-outline/10">
+                    <div class="format-container">
+                        <div id="toggleSlider" class="toggle-slider"></div>
+                        <button id="fmtHHMM" onclick="setFormat('HH:MM')" class="format-btn active">HH:MM</button>
+                        <button id="fmtDEC" onclick="setFormat('DEC')" class="format-btn">DEC</button>
                     </div>
 
-                    <div id="statusBox" class="p-5 rounded-[1.5rem] border flex items-center gap-4 transition-all duration-300">
-                        <div id="statusIcon" class="text-3xl"></div>
+                    <div id="statusBox" class="p-4 rounded-2xl flex items-center gap-4 transition-all">
+                        <div id="statusIcon" class="text-2xl"></div>
                         <div class="flex-1">
-                            <p class="text-[9px] font-bold uppercase opacity-60">Compliance Verdict</p>
-                            <h2 id="statusTitle" class="text-xl font-black tracking-tight uppercase">--</h2>
+                            <h2 id="statusTitle" class="text-lg font-bold uppercase tracking-tight">--</h2>
                         </div>
-                        <button onclick="shareReport()" class="w-12 h-12 rounded-2xl bg-white/20 dark:bg-white/5 flex flex-col items-center justify-center">
-                            <i class="fas fa-share-nodes text-xs"></i>
-                            <span class="text-[8px] font-bold uppercase mt-1">Share</span>
+                        <button onclick="shareReport()" class="w-10 h-10 rounded-full bg-black/5 dark:bg-white/5 flex items-center justify-center">
+                            <i class="fas fa-share-nodes text-sm"></i>
                         </button>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="p-4 rounded-2xl bg-white/50 dark:bg-slate-900/50 border border-slate-200 dark:border-fyellow/20 text-center">
-                            <p class="text-[9px] font-bold text-slate-500 uppercase">Actual FDP</p>
-                            <p id="resActual" class="text-xl font-bold mono">--:--</p>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="p-4 rounded-2xl bg-white dark:bg-white/5 border border-md-outline/10 text-center">
+                            <p class="text-[10px] font-medium opacity-60 uppercase">Actual FDP</p>
+                            <p id="resActual" class="text-lg font-bold mono">--:--</p>
                         </div>
-                        <div class="p-4 rounded-2xl bg-white/50 dark:bg-slate-900/50 border border-slate-200 dark:border-fyellow/20 text-center">
-                            <p class="text-[9px] font-bold text-slate-500 uppercase">Max Allowed</p>
-                            <p id="resMax" class="text-xl font-bold mono text-brand dark:text-fyellow">--:--</p>
+                        <div class="p-4 rounded-2xl bg-white dark:bg-white/5 border border-md-outline/10 text-center">
+                            <p class="text-[10px] font-medium opacity-60 uppercase">Max Allowed</p>
+                            <p id="resMax" class="text-lg font-bold mono text-md-primary dark:text-md-darkPrimary">--:--</p>
                         </div>
                     </div>
-
-                    <div class="p-4 rounded-2xl bg-brand/5 dark:bg-fyellow/5 border border-brand/10 dark:border-fyellow/20 text-[11px] space-y-2">
+                    
+                    <div class="p-3 rounded-xl bg-md-primary/5 dark:bg-md-darkPrimary/5 text-[11px] space-y-2">
                         <div class="flex justify-between"><span>Base FDP Limit:</span><span id="resBase" class="font-bold">--:--</span></div>
-                        <div class="flex justify-between border-t border-brand/5 dark:border-fyellow/10 pt-2"><span>WOCL Penalty:</span><span id="resPenalty" class="font-bold">--:--</span></div>
+                        <div class="flex justify-between opacity-70">
+                            <span>WOCL Penalty:</span>
+                            <span id="resPenalty" class="font-bold">--:--</span>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="glass rounded-[1.5rem] p-5 shadow-lg border-white/10">
-            <h3 class="text-[10px] font-black text-brand dark:text-fyellow uppercase tracking-widest mb-4 text-center">DGCA Reference Table</h3>
+        <div class="m3-card p-6 mb-8">
+            <h3 class="text-[11px] font-bold opacity-60 uppercase tracking-widest mb-4 text-center">DGCA Reference Table</h3>
             <div class="text-[11px]">
-                <div class="table-row-grid font-bold text-slate-400 dark:text-fyellow/40 border-b border-slate-200 dark:border-fyellow/10 pb-2 mb-2">
+                <div class="table-row-grid font-bold opacity-40 border-b border-md-outline/10 mb-1">
                     <span>LDG</span><span>MAX FT</span><span>MAX FDP</span>
                 </div>
-                <div class="space-y-1">
-                    <div class="table-row-grid"><span>1</span><span>10 hrs</span><span class="font-bold">13:00</span></div>
-                    <div class="table-row-grid bg-brand/5 dark:bg-fyellow/5 rounded-lg"><span>2</span><span>9 hrs</span><span class="font-bold">13:00</span></div>
-                    <div class="table-row-grid"><span>3</span><span>8 hrs</span><span class="font-bold">12:30</span></div>
-                    <div class="table-row-grid bg-brand/5 dark:bg-fyellow/5 rounded-lg"><span>4</span><span>8 hrs</span><span class="font-bold">12:00</span></div>
-                    <div class="table-row-grid"><span>5</span><span>8 hrs</span><span class="font-bold">11:30</span></div>
-                    <div class="table-row-grid bg-brand/5 dark:bg-fyellow/5 rounded-lg"><span>6</span><span>8 hrs</span><span class="font-bold">11:00</span></div>
-                </div>
+                <div class="table-row-grid"><span>1</span><span>10:00</span><span class="font-bold">13:00</span></div>
+                <div class="table-row-grid bg-md-primary/5 rounded-lg"><span>2</span><span>09:00</span><span class="font-bold">13:00</span></div>
+                <div class="table-row-grid"><span>3</span><span>08:00</span><span class="font-bold">12:30</span></div>
+                <div class="table-row-grid bg-md-primary/5 rounded-lg"><span>4</span><span>08:00</span><span class="font-bold">12:00</span></div>
+                <div class="table-row-grid"><span>5</span><span>08:00</span><span class="font-bold">11:30</span></div>
+                <div class="table-row-grid bg-md-primary/5 rounded-lg"><span>6</span><span>08:00</span><span class="font-bold">11:00</span></div>
             </div>
         </div>
     </div>
 
     <script>
-        document.onkeydown=function(e){if(e.keyCode==123||(e.ctrlKey&&e.shiftKey&&(e.keyCode=='I'.charCodeAt(0)||e.keyCode=='J'.charCodeAt(0)||e.keyCode=='C'.charCodeAt(0)))||(e.ctrlKey&&e.keyCode=='U'.charCodeAt(0)))return false;};
-        (function(){const b=function(){setInterval(function(){debugger;},100);};try{b();}catch(e){}})();
+        let lnd=1; let lastResult={}; let displayFormat='HH:MM'; let activeInputId='';
+        const hWheel=document.getElementById('hoursWheel'); const mWheel=document.getElementById('minsWheel');
 
-        let lnd=1;let lastResult={};
-        let displayFormat = 'HH:MM';
+        function initWheel(c, count) {
+            c.innerHTML = '<div></div><div></div>';
+            for (let i=0; i<count; i++) {
+                const d=document.createElement('div'); d.textContent=i.toString().padStart(2,'0');
+                c.appendChild(d);
+            }
+            c.innerHTML += '<div></div><div></div>';
+        }
+        initWheel(hWheel, 24); initWheel(mWheel, 60);
 
-        function toggleTheme(){const h=document.documentElement;const i=document.getElementById('themeIcon');if(h.classList.contains('dark')){h.classList.remove('dark');localStorage.theme='light';i.className='fas fa-sun text-brand';}else{h.classList.add('dark');localStorage.theme='dark';i.className='fas fa-moon text-fyellow';}}
-        function closeAlert(){document.getElementById('customAlert').style.display='none';}
-        function changeLnd(v){lnd=Math.max(1,Math.min(6,lnd+v));document.getElementById('landingsCount').innerText=lnd;calculate();}
-        function tToD(t){const[h,m]=t.split(':').map(Number);return h+(m/60);}
-        
-        function formatValue(d) {
-            if(displayFormat === 'DEC') return d.toFixed(2);
-            const h=Math.floor(d),m=Math.round((d-h)*60);
-            return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+        function updateWheelUI(w) {
+            const idx = Math.round(w.scrollTop / 40);
+            const items = w.querySelectorAll('div');
+            items.forEach((item, i) => { 
+                item.style.opacity = (i === idx + 2) ? '1' : '0.3';
+                item.style.transform = (i === idx + 2) ? 'scale(1.2)' : 'scale(1)';
+            });
         }
 
-        function setFormat(fmt) {
-            displayFormat = fmt;
-            document.getElementById('fmtHHMM').classList.toggle('active', fmt === 'HH:MM');
-            document.getElementById('fmtDEC').classList.toggle('active', fmt === 'DEC');
+        function openPicker(id) {
+            activeInputId = id;
+            document.getElementById('pickerTitle').innerText = id === 'reportTime' ? 'SET REPORT TIME' : 'SET CHOCKS ON';
+            document.getElementById('timePickerModal').classList.add('active');
+            const val = document.getElementById(id).value || "12:00";
+            const [h, m] = val.split(':').map(Number);
+            setTimeout(() => {
+                hWheel.scrollTo({ top: h*40, behavior: 'auto' });
+                mWheel.scrollTo({ top: m*40, behavior: 'auto' });
+                updateWheelUI(hWheel); updateWheelUI(mWheel);
+            }, 50);
+        }
+
+        function confirmTime() {
+            const h = Math.round(hWheel.scrollTop/40);
+            const m = Math.round(mWheel.scrollTop/40);
+            document.getElementById(activeInputId).value = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+            document.getElementById('timePickerModal').classList.remove('active');
             calculate();
         }
 
+        function closeError() { document.getElementById('errorModal').classList.remove('active'); }
+
         function calculate(){
-            const r=document.getElementById('reportTime'),c=document.getElementById('chocksOn'),res=document.getElementById('results'),pS=document.getElementById('resPenalty');
-            if(!r.value||!c.value)return;
-            try{
-                const s=tToD(r.value);const rawE=tToD(c.value);let e=rawE;if(e<s)e+=24;
-                if((s>=2&&s<=6)&&(rawE>=2&&rawE<=6)){document.getElementById('customAlert').style.display='flex';r.value='';c.value='';res.classList.add('hidden');return;}
-                res.classList.remove('hidden');const aF=e-s;const bL={1:13,2:13,3:12.5,4:12,5:11.5,6:11};const bF=bL[lnd];
+            const r=document.getElementById('reportTime'), c=document.getElementById('chocksOn'), res=document.getElementById('results');
+            if(!r.value || !c.value) return;
+            try {
+                const s = tToD(r.value); let rawE = tToD(c.value); let e = rawE; if(e<s) e+=24;
+                if((s>=2 && s<=6) && (rawE>=2 && rawE<=6)){
+                    document.getElementById('errorModal').classList.add('active');
+                    r.value=''; c.value=''; res.classList.add('hidden'); return;
+                }
+                res.classList.remove('hidden');
+                const aF = e - s;
+                const bL = {1:13, 2:13, 3:12.5, 4:12, 5:11.5, 6:11}; const bF = bL[lnd];
                 
-                let o=Math.max(0,Math.min(e,6)-Math.max(s,2))+Math.max(0,Math.min(e,30)-Math.max(s,26));
-                let p_raw=0;if(s>=2&&s<6){p_raw=Math.min(o,2);}else if(o>0){p_raw=o*0.5;}
+                let o = Math.max(0, Math.min(e, 6) - Math.max(s, 2)) + Math.max(0, Math.min(e, 30) - Math.max(s, 26));
+                let p_raw = 0; if(s >= 2 && s < 6){ p_raw = Math.min(o, 2); } else if(o > 0){ p_raw = o * 0.5; }
                 const p = Math.floor(p_raw * 60) / 60;
                 
-                // Keep penalty RED if it exists
-                pS.className=(p>0)?"font-bold text-red-600 dark:text-red-500":"font-bold text-slate-900 dark:text-white";
+                const al = bF - p;
+                const iL = aF <= (al + 0.001);
                 
-                const al=bF-p;const iL=aF<=(al+0.001);
+                document.getElementById('resActual').innerText = formatValue(aF);
+                document.getElementById('resMax').innerText = formatValue(al);
+                document.getElementById('resBase').innerText = formatValue(bF);
                 
-                document.getElementById('resActual').innerText=formatValue(aF);
-                document.getElementById('resMax').innerText=formatValue(al);
-                document.getElementById('resBase').innerText=formatValue(bF);
-                pS.innerText=`-${formatValue(p)}`;
+                const pEl = document.getElementById('resPenalty');
+                pEl.innerText = p > 0 ? `-${formatValue(p)}` : formatValue(p);
+                pEl.className = p > 0 ? "font-bold text-red-500" : "font-bold";
                 
-                const box=document.getElementById('statusBox'),tit=document.getElementById('statusTitle'),ic=document.getElementById('statusIcon');
+                const box = document.getElementById('statusBox'), tit = document.getElementById('statusTitle'), ic = document.getElementById('statusIcon');
                 if(iL){
-                    box.className="p-5 rounded-[1.5rem] bg-florence/10 border-florence/40 flex items-center gap-4 text-florence";
-                    tit.innerText="Legal";
-                    ic.innerHTML='<i class="fas fa-check-circle"></i>';
+                    box.className = "p-4 rounded-2xl bg-green-500/10 border border-green-500/20 flex items-center gap-4 text-green-600 dark:text-green-400";
+                    tit.innerText = "Legal"; ic.innerHTML = '<i class="fas fa-check-circle"></i>';
                 } else {
-                    // Keep Illegal Status RED
-                    box.className="p-5 rounded-[1.5rem] bg-red-500/10 border-red-500/40 border-dashed flex items-center gap-4 text-red-500";
-                    tit.innerText="Illegal";
-                    ic.innerHTML='<i class="fas fa-exclamation-triangle"></i>';
+                    box.className = "p-4 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center gap-4 text-red-600 dark:text-red-400";
+                    tit.innerText = "Illegal"; ic.innerHTML = '<i class="fas fa-triangle-exclamation"></i>';
                 }
-                
-                lastResult={report:r.value,chocks:c.value,landings:lnd,actual:formatValue(aF),max:formatValue(al),base:formatValue(bF),penalty:formatValue(p),status:iL?"✅ LEGAL":"❌ ILLEGAL"};
-            }catch(err){}}
+                lastResult={report:r.value, chocks:c.value, actual:formatValue(aF), max:formatValue(al), status: iL?"✅ LEGAL":"❌ ILLEGAL"};
+            } catch(e){}
+        }
 
+        function toggleTheme(){
+            const h=document.documentElement; const i=document.getElementById('themeIcon');
+            if(h.classList.contains('dark')){ h.classList.remove('dark'); i.className='fas fa-moon'; }
+            else { h.classList.add('dark'); i.className='fas fa-sun'; }
+        }
+        function changeLnd(v){ lnd=Math.max(1,Math.min(6,lnd+v)); document.getElementById('landingsCount').innerText=lnd; calculate(); }
+        function tToD(t){ const[h,m]=t.split(':').map(Number); return h+(m/60); }
+        function formatValue(d) {
+            if(displayFormat==='DEC') return d.toFixed(2);
+            const h=Math.floor(d), m=Math.round((d-h)*60);
+            return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+        }
+        function setFormat(fmt) {
+            displayFormat = fmt;
+            document.getElementById('fmtHHMM').classList.toggle('active', fmt==='HH:MM');
+            document.getElementById('fmtDEC').classList.toggle('active', fmt==='DEC');
+            document.getElementById('toggleSlider').classList.toggle('toggle-dec', fmt==='DEC');
+            calculate();
+        }
         async function shareReport(){
-            if(!lastResult.report)return;
-            const t=`✈️ FDTL REPORT (${displayFormat})\n---\nReport: ${lastResult.report}\nChocks: ${lastResult.chocks}\nActual: ${lastResult.actual}\nMax Allowed: ${lastResult.max}\nVerdict: ${lastResult.status}`;
-            if(navigator.share){await navigator.share({title:'FDTL Report',text:t});}else{navigator.clipboard.writeText(t);alert("Report Copied!");}
+            const t=`✈️ FDTL REPORT\nReport: ${lastResult.report}\nChocks: ${lastResult.chocks}\nActual: ${lastResult.actual}\nMax Allowed: ${lastResult.max}\nVerdict: ${lastResult.status}`;
+            if(navigator.share) await navigator.share({title:'FDTL Report',text:t});
+            else { navigator.clipboard.writeText(t); alert("Report Copied!"); }
         }
     </script>
 </body>
