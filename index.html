@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Jehan’s FDTL Calculator Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
@@ -50,6 +50,7 @@
             transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1); 
             -webkit-user-select: none; 
             user-select: none; 
+            touch-action: manipulation;
         }
 
         .m3-card {
@@ -101,7 +102,7 @@
             align-items: center; 
             justify-content: center; 
             background: rgba(0,0,0,0.4); 
-            backdrop-filter: blur(4px);
+            backdrop-filter: blur(8px);
         }
         .modal-overlay.active { display: flex; }
         
@@ -109,7 +110,7 @@
             background: #fdfbff; 
             color: #1a1c1e; 
             border-radius: 28px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.25);
         }
         .dark .bw-picker-card { background: #2e3135; color: #e2e2e6; }
 
@@ -119,8 +120,10 @@
             align-items: center; 
             height: 200px; 
             overflow: hidden; 
-            mask-image: linear-gradient(to bottom, transparent, black 40%, black 60%, transparent);
-            -webkit-mask-image: linear-gradient(to bottom, transparent, black 40%, black 60%, transparent);
+            /* Adjusted mask for better visibility of surrounding numbers */
+            mask-image: linear-gradient(to bottom, transparent, black 35%, black 65%, transparent);
+            -webkit-mask-image: linear-gradient(to bottom, transparent, black 35%, black 65%, transparent);
+            position: relative;
         }
         .wheel { 
             flex: 1; 
@@ -128,34 +131,47 @@
             overflow-y: scroll; 
             scroll-snap-type: y mandatory; 
             scrollbar-width: none; 
-            overscroll-behavior: contain; /* Prevents page shaking */
-            -webkit-overflow-scrolling: touch; /* Smooth iOS momentum */
+            overscroll-behavior: contain;
+            -webkit-overflow-scrolling: touch;
         }
         .wheel::-webkit-scrollbar { display: none; }
+        
         .wheel div { 
             height: 40px; 
             display: flex; 
             align-items: center; 
             justify-content: center; 
-            font-size: 1.5rem; 
+            font-size: 1.6rem; 
             scroll-snap-align: center; 
-            opacity: 0.3; 
-            transition: opacity 0.1s linear, transform 0.1s linear; /* Smooth visual transition */
+            opacity: 0.4; /* Higher base contrast */
+            transform: scale(0.85);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             will-change: transform, opacity;
+            font-weight: 500;
         }
+
+        /* Bold active state with primary color for high visibility */
+        .wheel div.active-time {
+            opacity: 1;
+            transform: scale(1.3);
+            font-weight: 800;
+            color: #005fb0;
+        }
+        .dark .wheel div.active-time { color: #a5c8ff; }
 
         .highlight-bar { 
             position: absolute; 
             top: 50%; 
             left: 50%; 
             transform: translate(-50%, -50%); 
-            width: 80%; 
-            height: 44px; 
-            background: rgba(0, 95, 176, 0.1); 
-            border-radius: 8px;
-            z-index: -1; 
+            width: 85%; 
+            height: 48px; 
+            background: rgba(0, 95, 176, 0.12); 
+            border-radius: 12px;
+            z-index: 0; 
+            pointer-events: none;
         }
-        .dark .highlight-bar { background: rgba(165, 200, 255, 0.1); }
+        .dark .highlight-bar { background: rgba(165, 200, 255, 0.12); }
 
         .table-row-grid { display: grid; grid-template-columns: 1fr 1fr 1.5fr; text-align: center; padding: 14px 8px; }
     </style>
@@ -163,17 +179,17 @@
 <body class="bg-md-surface dark:bg-md-darkSurface text-md-onSurface dark:text-md-darkOnSurface min-h-screen flex flex-col items-center p-4 md:p-8 font-sans" oncontextmenu="return false;">
 
     <div class="modal-overlay" id="timePickerModal">
-        <div class="bw-picker-card w-full max-w-[300px] p-6">
-            <h4 id="pickerTitle" class="text-sm font-medium tracking-wide mb-6 opacity-70">Select Time</h4>
-            <div class="time-wheels relative mb-6">
+        <div class="bw-picker-card w-[280px] p-6">
+            <h4 id="pickerTitle" class="text-[11px] font-bold tracking-[0.2em] mb-6 opacity-60 uppercase text-center">Select Time</h4>
+            <div class="time-wheels mb-6">
                 <div class="highlight-bar"></div>
-                <div class="wheel" id="hoursWheel" onscroll="throttledUpdateWheel(this)"></div>
-                <div class="text-2xl font-bold px-2">:</div>
-                <div class="wheel" id="minsWheel" onscroll="throttledUpdateWheel(this)"></div>
+                <div class="wheel" id="hoursWheel"></div>
+                <div class="text-3xl font-black px-2 z-10 opacity-80">:</div>
+                <div class="wheel" id="minsWheel"></div>
             </div>
-            <div class="flex justify-end gap-2">
-                <button onclick="document.getElementById('timePickerModal').classList.remove('active')" class="px-4 py-2 text-md-primary dark:text-md-darkPrimary font-medium">Cancel</button>
-                <button onclick="confirmTime()" class="px-6 py-2 bg-md-primary dark:bg-md-darkPrimary text-md-onPrimary dark:text-md-onPrimaryContainer rounded-full font-medium">Set</button>
+            <div class="flex gap-2">
+                <button onclick="document.getElementById('timePickerModal').classList.remove('active')" class="flex-1 py-3 text-md-primary dark:text-md-darkPrimary font-bold text-sm">CANCEL</button>
+                <button onclick="confirmTime()" class="flex-1 py-3 bg-md-primary dark:bg-md-darkPrimary text-md-onPrimary dark:text-md-onPrimaryContainer rounded-2xl font-bold text-sm">SET</button>
             </div>
         </div>
     </div>
@@ -185,11 +201,9 @@
                 <h4 class="text-sm font-bold uppercase tracking-wider">Invalid Times</h4>
             </div>
             <p class="text-sm opacity-80 leading-relaxed mb-6">
-                Both <span class="font-bold">Reporting</span> and <span class="font-bold">Chocks On</span> times are within the WOCL period (02:00 - 06:00). All inputs have been reset.
+                Both <span class="font-bold">Reporting</span> and <span class="font-bold">Chocks On</span> times are within the WOCL period (02:00 - 06:00). Resetting inputs.
             </p>
-            <div class="flex justify-end">
-                <button onclick="closeError()" class="px-6 py-2 bg-md-primary dark:bg-md-darkPrimary text-md-onPrimary dark:text-md-onPrimaryContainer rounded-full font-medium">Acknowledge</button>
-            </div>
+            <button onclick="closeError()" class="w-full py-3 bg-md-primary dark:bg-md-darkPrimary text-md-onPrimary dark:text-md-onPrimaryContainer rounded-2xl font-bold">OKAY</button>
         </div>
     </div>
 
@@ -198,13 +212,12 @@
             <h1 class="text-2xl md:text-3xl font-bold tracking-tight text-md-primary dark:text-md-darkPrimary">FDTL <span class="italic">PRO</span></h1>
             <p class="text-[11px] font-medium uppercase tracking-[0.1em] opacity-60">Jehan’s Professional Calculator</p>
         </div>
-        <button onclick="toggleTheme()" class="w-12 h-12 rounded-full flex items-center justify-center hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors">
+        <button onclick="toggleTheme()" class="w-12 h-12 rounded-full flex items-center justify-center hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
             <i id="themeIcon" class="fas fa-circle-half-stroke text-xl"></i>
         </button>
     </div>
 
     <main class="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-        
         <div class="space-y-6">
             <div class="m3-card p-6 md:p-8 shadow-sm">
                 <div class="space-y-6">
@@ -212,7 +225,7 @@
                         <label class="text-sm font-semibold text-md-primary dark:text-md-darkPrimary block mb-1">Reporting Time</label>
                         <div class="flex items-center">
                             <i class="fas fa-clock mr-3 opacity-50"></i>
-                            <input type="text" id="reportTime" readonly placeholder="--:--" class="bg-transparent text-2xl font-medium outline-none pointer-events-none">
+                            <input type="text" id="reportTime" readonly placeholder="--:--" class="bg-transparent text-3xl font-medium outline-none pointer-events-none">
                         </div>
                     </div>
 
@@ -220,16 +233,16 @@
                         <label class="text-sm font-semibold text-md-primary dark:text-md-darkPrimary block mb-1">Chocks On</label>
                         <div class="flex items-center">
                             <i class="fas fa-plane-arrival mr-3 opacity-50"></i>
-                            <input type="text" id="chocksOn" readonly placeholder="--:--" class="bg-transparent text-2xl font-medium outline-none pointer-events-none">
+                            <input type="text" id="chocksOn" readonly placeholder="--:--" class="bg-transparent text-3xl font-medium outline-none pointer-events-none">
                         </div>
                     </div>
 
                     <div class="bg-md-surfaceVariant/30 dark:bg-white/5 p-5 rounded-3xl">
-                        <label class="text-[12px] font-bold uppercase tracking-widest block mb-4 text-center opacity-70">Landings</label>
+                        <label class="text-[12px] font-bold uppercase tracking-widest block mb-4 text-center opacity-70">Number of Landings</label>
                         <div class="flex items-center justify-between px-6">
-                            <button onclick="changeLnd(-1)" class="w-12 h-12 rounded-full bg-md-primaryContainer dark:bg-md-darkPrimaryContainer text-md-onPrimaryContainer dark:text-white flex items-center justify-center text-lg"><i class="fas fa-minus"></i></button>
-                            <span id="landingsCount" class="text-4xl font-bold mono">1</span>
-                            <button onclick="changeLnd(1)" class="w-12 h-12 rounded-full bg-md-primaryContainer dark:bg-md-darkPrimaryContainer text-md-onPrimaryContainer dark:text-white flex items-center justify-center text-lg"><i class="fas fa-plus"></i></button>
+                            <button onclick="changeLnd(-1)" class="w-12 h-12 rounded-2xl bg-md-primaryContainer dark:bg-md-darkPrimaryContainer text-md-onPrimaryContainer dark:text-white flex items-center justify-center text-lg"><i class="fas fa-minus"></i></button>
+                            <span id="landingsCount" class="text-5xl font-bold mono">1</span>
+                            <button onclick="changeLnd(1)" class="w-12 h-12 rounded-2xl bg-md-primaryContainer dark:bg-md-darkPrimaryContainer text-md-onPrimaryContainer dark:text-white flex items-center justify-center text-lg"><i class="fas fa-plus"></i></button>
                         </div>
                     </div>
 
@@ -237,7 +250,7 @@
                         <div class="format-container">
                             <div id="toggleSlider" class="toggle-slider"></div>
                             <button id="fmtHHMM" onclick="setFormat('HH:MM')" class="format-btn active">HH:MM</button>
-                            <button id="fmtDEC" onclick="setFormat('DEC')" class="format-btn">DEC</button>
+                            <button id="fmtDEC" onclick="setFormat('DEC')" class="format-btn">DECIMAL</button>
                         </div>
 
                         <div id="statusBox" class="p-5 rounded-3xl flex items-center gap-4 transition-all">
@@ -262,13 +275,13 @@
                         </div>
                         
                         <div class="p-5 rounded-3xl bg-md-primary/5 dark:bg-md-darkPrimary/5 space-y-3">
-                            <div class="flex justify-between text-base">
-                                <span class="opacity-80">Base FDP Limit:</span>
-                                <span id="resBase" class="font-bold text-lg">--:--</span>
+                            <div class="flex justify-between">
+                                <span class="opacity-70 font-medium">Base FDP Limit:</span>
+                                <span id="resBase" class="font-bold text-lg mono">--:--</span>
                             </div>
-                            <div class="flex justify-between text-base">
-                                <span class="opacity-80">WOCL Penalty:</span>
-                                <span id="resPenalty" class="font-bold text-lg">--:--</span>
+                            <div class="flex justify-between">
+                                <span class="opacity-70 font-medium">WOCL Penalty:</span>
+                                <span id="resPenalty" class="font-bold text-lg mono">--:--</span>
                             </div>
                         </div>
                     </div>
@@ -296,36 +309,26 @@
         let lnd=1; let lastResult={}; let displayFormat='HH:MM'; let activeInputId='';
         const hWheel=document.getElementById('hoursWheel'); const mWheel=document.getElementById('minsWheel');
 
+        // High-performance observer for the steady scale/contrast effect
+        const obsOptions = { root: null, rootMargin: '-48% 0px -48% 0px', threshold: 0.1 };
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) entry.target.classList.add('active-time');
+                else entry.target.classList.remove('active-time');
+            });
+        }, obsOptions);
+
         function initWheel(c, count) {
             c.innerHTML = '<div></div><div></div>';
             for (let i=0; i<count; i++) {
-                const d=document.createElement('div'); d.textContent=i.toString().padStart(2,'0');
+                const d=document.createElement('div'); 
+                d.textContent=i.toString().padStart(2,'0');
                 c.appendChild(d);
+                observer.observe(d);
             }
             c.innerHTML += '<div></div><div></div>';
         }
         initWheel(hWheel, 24); initWheel(mWheel, 60);
-
-        // Prevents UI jitter by only updating once per frame
-        let isUpdating = false;
-        function throttledUpdateWheel(w) {
-            if (isUpdating) return;
-            isUpdating = true;
-            requestAnimationFrame(() => {
-                updateWheelUI(w);
-                isUpdating = false;
-            });
-        }
-
-        function updateWheelUI(w) {
-            const idx = Math.round(w.scrollTop / 40);
-            const items = w.querySelectorAll('div');
-            items.forEach((item, i) => { 
-                const isSelected = (i === idx + 2);
-                item.style.opacity = isSelected ? '1' : '0.3';
-                item.style.transform = isSelected ? 'scale(1.2)' : 'scale(1)';
-            });
-        }
 
         function openPicker(id) {
             activeInputId = id;
@@ -336,8 +339,7 @@
             setTimeout(() => {
                 hWheel.scrollTo({ top: h*40, behavior: 'auto' });
                 mWheel.scrollTo({ top: m*40, behavior: 'auto' });
-                updateWheelUI(hWheel); updateWheelUI(mWheel);
-            }, 50);
+            }, 10);
         }
 
         function confirmTime() {
@@ -349,14 +351,6 @@
         }
 
         function closeError() { document.getElementById('errorModal').classList.remove('active'); }
-
-        function smartFloorMin(dec) {
-            const totalMins = dec * 60;
-            if (Math.abs(totalMins - Math.round(totalMins)) < 0.00001) {
-                return Math.round(totalMins) / 60;
-            }
-            return Math.floor(totalMins) / 60;
-        }
 
         function calculate(){
             const r=document.getElementById('reportTime'), c=document.getElementById('chocksOn'), res=document.getElementById('results');
@@ -373,27 +367,25 @@
                     res.classList.add('hidden'); return;
                 }
                 res.classList.remove('hidden');
-                const aF = smartFloorMin(e - s);
+                const aF = (e - s);
                 const bL = {1:13, 2:13, 3:12.5, 4:12, 5:11.5, 6:11}; 
                 const bF = bL[lnd];
                 let p = 0;
-                if(s >= 2 && s < 6) {
-                    p = Math.min(Math.min(e, 6) - s, 2); 
-                } else {
+                if(s >= 2 && s < 6) { p = Math.min(Math.min(e, 6) - s, 2); } 
+                else {
                     let encroachment = 0;
                     if (e > 26) encroachment = Math.min(e, 30) - 26; 
                     else if (e > 2 && e < 6 && s < 2) encroachment = e - 2;
                     if(encroachment > 0) p = encroachment * 0.5;
                 }
-                p = smartFloorMin(p);
-                const al = smartFloorMin(bF - p);
-                const iL = aF <= (al + 0.00001);
+                const al = bF - p;
+                const iL = aF <= (al + 0.0001);
                 document.getElementById('resActual').innerText = formatValue(aF);
                 document.getElementById('resMax').innerText = formatValue(al);
                 document.getElementById('resBase').innerText = formatValue(bF);
                 const pEl = document.getElementById('resPenalty');
                 pEl.innerText = p > 0 ? `-${formatValue(p)}` : formatValue(p);
-                pEl.className = p > 0 ? "font-bold text-lg text-red-500" : "font-bold text-lg";
+                pEl.className = p > 0 ? "font-bold text-lg mono text-red-500" : "font-bold text-lg mono";
                 const box = document.getElementById('statusBox'), tit = document.getElementById('statusTitle'), ic = document.getElementById('statusIcon');
                 if(iL){
                     box.className = "p-5 rounded-3xl bg-green-500/10 border border-green-500/20 flex items-center gap-4 text-green-600 dark:text-green-400";
@@ -406,10 +398,7 @@
             } catch(e){}
         }
 
-        function toggleTheme(){
-            const h=document.documentElement;
-            h.classList.contains('dark') ? h.classList.remove('dark') : h.classList.add('dark');
-        }
+        function toggleTheme(){ document.documentElement.classList.toggle('dark'); }
         function changeLnd(v){ lnd=Math.max(1,Math.min(6,lnd+v)); document.getElementById('landingsCount').innerText=lnd; calculate(); }
         function tToD(t){ const[h,m]=t.split(':').map(Number); return h+(m/60); }
         function formatValue(d) {
