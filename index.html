@@ -190,6 +190,19 @@
 </head>
 <body class="bg-md-surface dark:bg-md-darkSurface text-md-onSurface dark:text-md-darkOnSurface min-h-screen flex flex-col items-center p-4 md:p-8 font-sans" oncontextmenu="return false;">
 
+    <div class="modal-overlay" id="errorModal">
+        <div class="bw-picker-card w-full max-w-[300px] p-6 border-t-4 border-red-500">
+            <div class="flex items-center gap-3 mb-4 text-red-600 dark:text-red-400">
+                <i class="fas fa-circle-exclamation text-xl"></i>
+                <h4 class="text-sm font-bold uppercase tracking-wider">Invalid Times</h4>
+            </div>
+            <p class="text-sm opacity-80 leading-relaxed mb-6">
+                Both <span class="font-bold">Reporting</span> and <span class="font-bold">Chocks On</span> times are within the WOCL period (02:00 - 06:00). Resetting inputs.
+            </p>
+            <button onclick="closeError()" class="w-full py-3 bg-md-primary dark:bg-md-darkPrimary text-md-onPrimary dark:text-md-onPrimaryContainer rounded-2xl font-bold">OKAY</button>
+        </div>
+    </div>
+
     <div class="modal-overlay" id="timePickerModal">
         <div class="bw-picker-card w-[300px] p-6">
             <h4 id="pickerTitle" class="text-[12px] font-bold tracking-[0.2em] mb-4 text-md-primary dark:text-md-darkPrimary text-center uppercase">Select Time</h4>
@@ -203,19 +216,6 @@
                 <button onclick="document.getElementById('timePickerModal').classList.remove('active')" class="flex-1 py-4 text-md-onSurface dark:text-md-darkOnSurface opacity-60 font-bold text-xs tracking-widest">CANCEL</button>
                 <button onclick="confirmTime()" class="flex-1 py-4 bg-md-primary dark:bg-md-darkPrimary text-md-onPrimary dark:text-md-onPrimaryContainer rounded-2xl font-bold text-xs tracking-widest shadow-lg">SET TIME</button>
             </div>
-        </div>
-    </div>
-
-    <div class="modal-overlay" id="errorModal">
-        <div class="bw-picker-card w-full max-w-[300px] p-6 border-t-4 border-red-500">
-            <div class="flex items-center gap-3 mb-4 text-red-600 dark:text-red-400">
-                <i class="fas fa-circle-exclamation text-xl"></i>
-                <h4 class="text-sm font-bold uppercase tracking-wider">Invalid Times</h4>
-            </div>
-            <p class="text-sm opacity-80 leading-relaxed mb-6">
-                Both <span class="font-bold">Reporting</span> and <span class="font-bold">Chocks On</span> times are within the WOCL period (02:00 - 06:00). Resetting inputs.
-            </p>
-            <button onclick="closeError()" class="w-full py-3 bg-md-primary dark:bg-md-darkPrimary text-md-onPrimary dark:text-md-onPrimaryContainer rounded-2xl font-bold">OKAY</button>
         </div>
     </div>
 
@@ -365,14 +365,17 @@
         function calculate(){
             const r=document.getElementById('reportTime'), c=document.getElementById('chocksOn'), res=document.getElementById('results');
             if(!r.value || !c.value) return;
+            
             try {
                 const s = tToD(r.value); 
                 let rawE = tToD(c.value); 
                 let e = rawE; 
                 if(e < s) e += 24;
 
-                // Error modal: Both times strictly inside WOCL
-                if((s >= 2 && s <= 6) && (rawE >= 2 && rawE <= 6)){
+                // --- 1. WOCL Error Modal Logic ---
+                // Triggers if BOTH reporting and chocks on are within 02:00 - 06:00
+                const inWoclRange = (t) => (t >= 2.0 && t <= 6.0);
+                if(inWoclRange(s) && inWoclRange(rawE)){
                     document.getElementById('errorModal').classList.add('active');
                     r.value=''; c.value=''; lnd = 1; 
                     document.getElementById('landingsCount').innerText = lnd;
@@ -385,37 +388,30 @@
                 const bF = bL[lnd];
 
                 let p = 0;
-                const wStart = 2;
-                const wEnd = 6;
+                const wStart = 2.0;
+                const wEnd = 6.0;
 
-                // Condition 1: Report is 00:00 to 01:59 -> Outside WOCL
-                const isReportOutsideWocl = (s >= 0 && s < 2);
-
-                if (!isReportOutsideWocl && s >= wStart && s < wEnd) {
+                // --- 2. WOCL Penalty Calculation Logic ---
+                // Case A: Reporting time is between 02:00 and 06:00
+                if (s >= wStart && s <= wEnd) {
                     // Starts in WOCL -> 100% encroachment up to 2 hours
                     const encroachment = Math.min(e, wEnd) - s;
-                    p = Math.min(encroachment, 2); 
-                } else {
-                    // Ends in or covers WOCL -> 50% encroachment
-                    let encroachment = 0;
+                    p = Math.min(encroachment, 2.0); 
+                } 
+                else {
+                    // Case B: Chocks on is between 02:00 and 06:00
+                    // Case C: Duration encompasses the entire WOCL period (02:00 - 06:00)
+                    
+                    let overlap = 0;
+                    // Check overlap with the first 02:00-06:00 window
+                    overlap += Math.max(0, Math.min(e, wEnd) - Math.max(s, wStart));
+                    
+                    // Check overlap with the next day's 02:00-06:00 window (26:00-30:00)
+                    overlap += Math.max(0, Math.min(e, wEnd + 24) - Math.max(s, wStart + 24));
 
-                    // Condition 2: Chocks On is 06:01 or more -> Full WOCL (4hrs) is encroached
-                    const fullWoclEncroached = (rawE > 6);
-
-                    if (fullWoclEncroached) {
-                        encroachment = 4;
-                    } else if (e > 26) { 
-                        // Crosses midnight into next morning WOCL (24 + 2)
-                        encroachment = Math.min(e, 30) - 26; 
-                    } else if (e > wStart && e <= wEnd && s < wStart) {
-                        // Ends exactly in or before 06:00
-                        encroachment = e - wStart;
-                    }
-
-                    if (encroachment > 0) {
-                        // Math floor round down logic
-                        const totalPenaltyMins = encroachment * 30; // 50% = 30 mins per hour
-                        p = Math.floor(totalPenaltyMins) / 60;
+                    if (overlap > 0) {
+                        // Penalty is 50% of the total encroachment
+                        p = overlap * 0.5;
                     }
                 }
 
@@ -439,7 +435,7 @@
                     tit.innerText = "Illegal"; ic.innerHTML = '<i class="fas fa-triangle-exclamation"></i>';
                 }
                 lastResult={report:r.value, chocks:c.value, actual:formatValue(aF), max:formatValue(al), status: iL?"✅ LEGAL":"❌ ILLEGAL"};
-            } catch(e){}
+            } catch(e){ console.error(e); }
         }
 
         function toggleTheme(){ document.documentElement.classList.toggle('dark'); }
@@ -449,7 +445,9 @@
         function formatValue(d) {
             if(displayFormat==='DEC') return d.toFixed(2);
             const totalMins = Math.round(d * 60);
-            return `${String(Math.floor(totalMins / 60)).padStart(2,'0')}:${String(totalMins % 60).padStart(2,'0')}`;
+            const hh = Math.floor(totalMins / 60);
+            const mm = totalMins % 60;
+            return `${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`;
         }
 
         function setFormat(fmt) {
