@@ -372,8 +372,6 @@
                 let e = rawE; 
                 if(e < s) e += 24;
 
-                // --- 1. WOCL Error Modal Logic ---
-                // Triggers if BOTH reporting and chocks on are within 02:00 - 06:00
                 const inWoclRange = (t) => (t >= 2.0 && t <= 6.0);
                 if(inWoclRange(s) && inWoclRange(rawE)){
                     document.getElementById('errorModal').classList.add('active');
@@ -391,27 +389,23 @@
                 const wStart = 2.0;
                 const wEnd = 6.0;
 
-                // --- 2. WOCL Penalty Calculation Logic ---
-                // Case A: Reporting time is between 02:00 and 06:00
                 if (s >= wStart && s <= wEnd) {
-                    // Starts in WOCL -> 100% encroachment up to 2 hours
                     const encroachment = Math.min(e, wEnd) - s;
                     p = Math.min(encroachment, 2.0); 
                 } 
                 else {
-                    // Case B: Chocks on is between 02:00 and 06:00
-                    // Case C: Duration encompasses the entire WOCL period (02:00 - 06:00)
-                    
+                    // Logic for when FDP ends in WOCL or encompasses it
                     let overlap = 0;
-                    // Check overlap with the first 02:00-06:00 window
+                    // Primary window
                     overlap += Math.max(0, Math.min(e, wEnd) - Math.max(s, wStart));
-                    
-                    // Check overlap with the next day's 02:00-06:00 window (26:00-30:00)
+                    // Next day window
                     overlap += Math.max(0, Math.min(e, wEnd + 24) - Math.max(s, wStart + 24));
 
                     if (overlap > 0) {
-                        // Penalty is 50% of the total encroachment
-                        p = overlap * 0.5;
+                        // Modified logic: find encroachment in minutes, div by 2, floor result
+                        let encroachmentMinutes = overlap * 60;
+                        let penaltyMinutes = Math.floor(encroachmentMinutes / 2);
+                        p = penaltyMinutes / 60;
                     }
                 }
 
