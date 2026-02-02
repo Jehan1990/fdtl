@@ -105,7 +105,7 @@
         .modal-overlay { 
             position: fixed; 
             inset: 0; 
-            z-index: 100; 
+            z-index: 1000; 
             display: none; 
             align-items: center; 
             justify-content: center; 
@@ -137,7 +137,6 @@
             -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 45%, black 55%, transparent 100%);
             position: relative;
             touch-action: pan-y;
-            perspective: 1000px;
         }
         .wheel { 
             flex: 1; 
@@ -159,9 +158,9 @@
             justify-content: center; 
             font-size: 1.5rem; 
             scroll-snap-align: center; 
-            opacity: 0.35; 
-            transform: scale(0.85);
-            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            opacity: 0.4; 
+            transform: scale(0.9);
+            transition: transform 0.1s ease-out, opacity 0.1s ease-out;
             font-family: 'JetBrains Mono', monospace;
             color: #44474e;
             font-weight: 500;
@@ -169,17 +168,16 @@
         }
         .dark .wheel div { color: #c4c6d0; }
 
-        /* Enhanced Glow and Elevation Effect */
         .wheel div.in-focus {
             opacity: 1 !important;
-            transform: scale(1.3) translateZ(20px) !important;
+            transform: scale(1.2) !important;
             font-weight: 800;
             color: #005fb0;
-            filter: drop-shadow(0 0 8px rgba(0, 95, 176, 0.5));
+            text-shadow: 0 0 8px rgba(0, 95, 176, 0.2);
         }
         .dark .wheel div.in-focus { 
             color: #a5c8ff;
-            filter: drop-shadow(0 0 12px rgba(165, 200, 255, 0.6));
+            text-shadow: 0 0 12px rgba(165, 200, 255, 0.4);
         }
 
         .selection-highlight { 
@@ -204,13 +202,13 @@
     <div class="particles" id="pickerParticles"></div>
 
     <div class="modal-overlay" id="errorModal">
-        <div class="bw-picker-card w-full max-w-[300px] p-6 border-t-4 border-red-500">
+        <div class="bw-picker-card w-full max-w-[320px] p-6 border-t-4 border-red-500">
             <div class="flex items-center gap-3 mb-4 text-red-600 dark:text-red-400">
                 <i class="fas fa-circle-exclamation text-xl"></i>
                 <h4 class="text-sm font-bold uppercase tracking-wider">Invalid Times</h4>
             </div>
             <p class="text-sm opacity-80 leading-relaxed mb-6">
-                Both <span class="font-bold">Reporting</span> and <span class="font-bold">Chocks On</span> times are within the WOCL period (02:00 - 06:00). Resetting inputs.
+                Both <span class="font-bold">Reporting</span> and <span class="font-bold">Chocks On</span> times are within the WOCL period (02:00 - 06:00). Calculation not allowed.
             </p>
             <button onclick="closeError()" class="w-full py-3 bg-md-primary dark:bg-md-darkPrimary text-md-onPrimary dark:text-md-onPrimaryContainer rounded-2xl font-bold">OKAY</button>
         </div>
@@ -343,7 +341,6 @@
                 digits.forEach(digit => {
                     const digitCenter = digit.offsetTop + (digit.clientHeight / 2);
                     const distance = Math.abs(center - digitCenter);
-                    // Higher sensitivity (distance < 25) for smooth transition
                     if (distance < 25) {
                         digit.classList.add('in-focus');
                     } else {
@@ -415,15 +412,19 @@
             const r=document.getElementById('reportTime'), c=document.getElementById('chocksOn'), res=document.getElementById('results');
             if(!r.value || !c.value) return;
             
-            const s = tToD(r.value); let rawE = tToD(c.value); let e = rawE; 
+            const s = tToD(r.value); 
+            let rawE = tToD(c.value); 
+            let e = rawE; 
             if(e < s) e += 24;
 
+            // WOCL Error Logic: If both Report and Chocks are in 02:00-06:00 window
             const inWoclRange = (t) => (t >= 2.0 && t <= 6.0);
             if(inWoclRange(s) && inWoclRange(rawE)){
                 document.getElementById('errorModal').classList.add('active');
                 r.value=''; c.value=''; lnd = 1; 
                 document.getElementById('landingsCount').innerText = lnd;
-                res.classList.add('hidden'); return;
+                res.classList.add('hidden'); 
+                return;
             }
 
             res.classList.remove('hidden');
@@ -433,14 +434,15 @@
             
             let p = 0;
             if (s >= 2.0 && s <= 6.0) { 
+                // Full penalty logic for reporting within WOCL
                 p = Math.min(Math.min(e, 6.0) - s, 2.0); 
             } else {
+                // Requested 50% encroachment logic
                 let overlap = Math.max(0, Math.min(e, 6.0) - Math.max(s, 2.0)) + Math.max(0, Math.min(e, 30.0) - Math.max(s, 26.0));
-                
                 if (overlap > 0) {
                     let totalMins = Math.round(overlap * 60);
                     let halfMins = totalMins / 2;
-                    let finalMins = Math.floor(halfMins);
+                    let finalMins = Math.floor(halfMins); // Ignore decimals
                     p = finalMins / 60;
                 }
             }
