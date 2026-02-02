@@ -24,19 +24,22 @@
                     fontFamily: { sans: ['Outfit', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'] }, 
                     colors: { 
                         md: {
-                            primary: '#005fb0',
+                            // Light Mode (Vibrant Green, Pink, White)
+                            primary: '#22c55e', 
                             onPrimary: '#ffffff',
-                            primaryContainer: '#d4e3ff',
-                            onPrimaryContainer: '#001c3b',
-                            surface: '#fdfbff',
-                            onSurface: '#1a1c1e',
-                            surfaceVariant: '#e0e2ec',
-                            onSurfaceVariant: '#44474e',
-                            outline: '#74777f',
-                            darkSurface: '#1a1c1e',
-                            darkOnSurface: '#e2e2e6',
-                            darkPrimary: '#a5c8ff',
-                            darkPrimaryContainer: '#004786'
+                            primaryContainer: '#fdf2f8',
+                            onPrimaryContainer: '#ec4899',
+                            surface: '#ffffff',
+                            onSurface: '#1f2937',
+                            surfaceVariant: '#f0fdf4',
+                            onSurfaceVariant: '#166534',
+                            outline: '#22c55e',
+                            // Dark Mode (High Contrast Jet Black, Florence Green, Pink)
+                            darkSurface: '#000000',
+                            darkOnSurface: '#ffffff',
+                            darkPrimary: '#52ef41', // High contrast vibrant florence green
+                            darkPrimaryContainer: '#1e2e1c',
+                            darkAccent: '#ff2d92'  // High contrast pink
                         }
                     } 
                 } 
@@ -65,41 +68,42 @@
             border-radius: 28px;
             transition: all 0.3s ease;
         }
-        .light .m3-card, :not(.dark) .m3-card { background: #f3f4f9; border: 1px solid rgba(0,0,0,0.05); }
-        .dark .m3-card { background: #222529; border: 1px solid rgba(255,255,255,0.05); }
+        .light .m3-card, :not(.dark) .m3-card { background: #ffffff; border: 1px solid #fce7f3; box-shadow: 0 10px 30px -10px rgba(34, 197, 94, 0.1); }
+        .dark .m3-card { background: #080808; border: 1px solid rgba(82, 239, 65, 0.2); }
 
         .format-container { 
-            background: #e0e2ec; 
+            background: #fdf2f8; 
             border-radius: 100px; 
             padding: 4px; 
             display: flex; 
             position: relative; 
             width: fit-content;
             margin: 0 auto;
+            border: 1px solid #fce7f3;
         }
-        .dark .format-container { background: #44474e; }
+        .dark .format-container { background: #111; border: 1px solid #52ef41; }
         .format-btn { 
             padding: 8px 20px; 
             font-size: 12px; 
             font-weight: 500; 
-            color: #44474e; 
+            color: #ec4899; 
             position: relative; 
             z-index: 2; 
         }
-        .dark .format-btn { color: #c4c6d0; }
+        .dark .format-btn { color: #ffffff; opacity: 0.6; }
         .format-btn.active { color: #ffffff; }
-        .dark .format-btn.active { color: #00315e; }
+        .dark .format-btn.active { color: #000000; opacity: 1; font-weight: 800; }
         
         .toggle-slider { 
             position: absolute; 
             height: calc(100% - 8px); 
             width: calc(50% - 4px); 
-            background: #005fb0; 
+            background: #ec4899; 
             border-radius: 100px; 
             transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1); 
             z-index: 1; 
         }
-        .dark .toggle-slider { background: #a5c8ff; }
+        .dark .toggle-slider { background: #52ef41; }
         .toggle-dec { transform: translateX(100%); }
 
         .modal-overlay { 
@@ -109,22 +113,22 @@
             display: none; 
             align-items: center; 
             justify-content: center; 
-            background: rgba(0,0,0,0.6); 
-            backdrop-filter: blur(10px);
+            background: rgba(0,0,0,0.85); 
+            backdrop-filter: blur(8px);
         }
         .modal-overlay.active { display: flex; }
         
         .bw-picker-card { 
             background: #ffffff; 
-            color: #1a1c1e; 
-            border-radius: 28px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
-            border: 1px solid rgba(0,0,0,0.1);
+            color: #1f2937; 
+            border-radius: 32px;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.2);
+            border: 1px solid #fce7f3;
         }
         .dark .bw-picker-card { 
-            background: #1e1f21; 
-            color: #e2e2e6; 
-            border: 1px solid rgba(255,255,255,0.1);
+            background: #000000; 
+            color: #ffffff; 
+            border: 2px solid #52ef41;
         }
 
         .time-wheels { 
@@ -142,12 +146,11 @@
             flex: 1; 
             height: 100%; 
             overflow-y: scroll; 
-            overflow-x: hidden;
+            overflow-x: hidden; 
+            touch-action: pan-y;
             scroll-snap-type: y mandatory; 
             scrollbar-width: none; 
             overscroll-behavior: contain;
-            scroll-behavior: auto; 
-            -webkit-overflow-scrolling: touch;
         }
         .wheel::-webkit-scrollbar { display: none; }
         
@@ -158,27 +161,21 @@
             justify-content: center; 
             font-size: 1.5rem; 
             scroll-snap-align: center; 
-            opacity: 0.4; 
-            transform: scale(0.9);
-            transition: transform 0.1s ease-out, opacity 0.1s ease-out;
+            opacity: 0.3; 
+            transition: all 0.2s ease;
             font-family: 'JetBrains Mono', monospace;
-            color: #44474e;
-            font-weight: 500;
-            width: 100%;
+            color: #166534;
+            white-space: nowrap;
         }
-        .dark .wheel div { color: #c4c6d0; }
+        .dark .wheel div { color: #ffffff; }
 
         .wheel div.in-focus {
             opacity: 1 !important;
-            transform: scale(1.2) !important;
+            transform: scale(1.3);
             font-weight: 800;
-            color: #005fb0;
-            text-shadow: 0 0 8px rgba(0, 95, 176, 0.2);
+            color: #ec4899;
         }
-        .dark .wheel div.in-focus { 
-            color: #a5c8ff;
-            text-shadow: 0 0 12px rgba(165, 200, 255, 0.4);
-        }
+        .dark .wheel div.in-focus { color: #ff2d92; text-shadow: 0 0 15px rgba(255, 45, 146, 0.4); }
 
         .selection-highlight { 
             position: absolute; 
@@ -186,13 +183,14 @@
             left: 50%; 
             transform: translate(-50%, -50%); 
             width: 85%; 
-            height: 50px; 
-            background: rgba(128, 128, 128, 0.04); 
-            border: 1px solid rgba(0, 95, 176, 0.1);
-            border-radius: 12px;
+            height: 52px; 
+            background: #fdf2f8; 
+            border-radius: 16px;
+            border: 1px solid #fbcfe8;
             z-index: 0; 
             pointer-events: none;
         }
+        .dark .selection-highlight { background: rgba(82, 239, 65, 0.05); border-color: #52ef41; }
 
         .table-row-grid { display: grid; grid-template-columns: 1fr 1fr 1.5fr; text-align: center; padding: 14px 8px; }
     </style>
@@ -203,20 +201,20 @@
 
     <div class="modal-overlay" id="errorModal">
         <div class="bw-picker-card w-full max-w-[320px] p-6 border-t-4 border-red-500">
-            <div class="flex items-center gap-3 mb-4 text-red-600 dark:text-red-400">
+            <div class="flex items-center gap-3 mb-4 text-red-600">
                 <i class="fas fa-circle-exclamation text-xl"></i>
                 <h4 class="text-sm font-bold uppercase tracking-wider">Invalid Times</h4>
             </div>
             <p class="text-sm opacity-80 leading-relaxed mb-6">
                 Both <span class="font-bold">Reporting</span> and <span class="font-bold">Chocks On</span> times are within the WOCL period (02:00 - 06:00). Calculation not allowed.
             </p>
-            <button onclick="closeError()" class="w-full py-3 bg-md-primary dark:bg-md-darkPrimary text-md-onPrimary dark:text-md-onPrimaryContainer rounded-2xl font-bold">OKAY</button>
+            <button onclick="closeError()" class="w-full py-3 bg-md-primary dark:bg-md-darkPrimary text-md-onPrimary dark:text-black rounded-2xl font-bold">OKAY</button>
         </div>
     </div>
 
     <div class="modal-overlay" id="timePickerModal">
         <div class="bw-picker-card w-[320px] p-6 relative z-[110]">
-            <h4 id="pickerTitle" class="text-[11px] font-bold tracking-[0.2em] mb-6 text-md-primary dark:text-md-darkPrimary text-center uppercase opacity-70">Set Time</h4>
+            <h4 id="pickerTitle" class="text-[11px] font-bold tracking-[0.2em] mb-6 text-md-onPrimaryContainer dark:text-md-darkPrimary text-center uppercase opacity-80">Set Time</h4>
             <div class="time-wheels mb-6">
                 <div class="selection-highlight"></div>
                 <div class="wheel" id="hoursWheel"></div>
@@ -225,7 +223,7 @@
             </div>
             <div class="flex gap-3">
                 <button onclick="closePicker()" class="flex-1 py-4 text-md-onSurface dark:text-md-darkOnSurface opacity-60 font-bold text-[11px] tracking-widest">CANCEL</button>
-                <button onclick="confirmTime()" class="flex-1 py-4 bg-md-primary dark:bg-md-darkPrimary text-md-onPrimary dark:text-md-onPrimaryContainer rounded-2xl font-bold text-[11px] tracking-widest shadow-lg">CONFIRM</button>
+                <button onclick="confirmTime()" class="flex-1 py-4 bg-md-primary dark:bg-md-darkPrimary text-md-onPrimary dark:text-black rounded-2xl font-bold text-[11px] tracking-widest shadow-lg">CONFIRM</button>
             </div>
         </div>
     </div>
@@ -244,32 +242,32 @@
         <div class="space-y-6">
             <div class="m3-card p-6 md:p-8 shadow-sm">
                 <div class="space-y-6">
-                    <div onclick="openPicker('reportTime')" class="relative group cursor-pointer border-b border-md-outline/30 pb-3">
-                        <label class="text-sm font-semibold text-md-primary dark:text-md-darkPrimary block mb-1">Reporting Time</label>
+                    <div onclick="openPicker('reportTime')" class="relative group cursor-pointer border-b border-md-primary/20 dark:border-md-darkPrimary/40 pb-3">
+                        <label class="text-sm font-semibold text-md-onPrimaryContainer dark:text-md-darkPrimary block mb-1">Reporting Time</label>
                         <div class="flex items-center">
-                            <i class="fas fa-clock mr-3 opacity-50"></i>
+                            <i class="fas fa-clock mr-3 text-md-primary dark:text-md-darkPrimary opacity-80"></i>
                             <input type="text" id="reportTime" readonly placeholder="--:--" class="bg-transparent text-3xl font-medium outline-none pointer-events-none">
                         </div>
                     </div>
 
-                    <div onclick="openPicker('chocksOn')" class="relative group cursor-pointer border-b border-md-outline/30 pb-3">
-                        <label class="text-sm font-semibold text-md-primary dark:text-md-darkPrimary block mb-1">Chocks On</label>
+                    <div onclick="openPicker('chocksOn')" class="relative group cursor-pointer border-b border-md-primary/20 dark:border-md-darkPrimary/40 pb-3">
+                        <label class="text-sm font-semibold text-md-onPrimaryContainer dark:text-md-darkPrimary block mb-1">Chocks On</label>
                         <div class="flex items-center">
-                            <i class="fas fa-plane-arrival mr-3 opacity-50"></i>
+                            <i class="fas fa-plane-arrival mr-3 text-md-primary dark:text-md-darkPrimary opacity-80"></i>
                             <input type="text" id="chocksOn" readonly placeholder="--:--" class="bg-transparent text-3xl font-medium outline-none pointer-events-none">
                         </div>
                     </div>
 
-                    <div class="bg-md-surfaceVariant/30 dark:bg-white/5 p-5 rounded-3xl">
+                    <div class="bg-md-surfaceVariant dark:bg-md-darkPrimaryContainer/30 p-5 rounded-3xl border border-md-primary/10 dark:border-md-darkPrimary/30">
                         <label class="text-[12px] font-bold uppercase tracking-widest block mb-4 text-center opacity-70">Number of Landings</label>
                         <div class="flex items-center justify-between px-6">
-                            <button onclick="changeLnd(-1)" class="w-12 h-12 rounded-2xl bg-md-primaryContainer dark:bg-md-darkPrimaryContainer text-md-onPrimaryContainer dark:text-white flex items-center justify-center text-lg"><i class="fas fa-minus"></i></button>
+                            <button onclick="changeLnd(-1)" class="w-12 h-12 rounded-2xl bg-md-primary dark:bg-md-darkPrimary text-md-onPrimary dark:text-black flex items-center justify-center text-lg"><i class="fas fa-minus"></i></button>
                             <span id="landingsCount" class="text-5xl font-bold mono">1</span>
-                            <button onclick="changeLnd(1)" class="w-12 h-12 rounded-2xl bg-md-primaryContainer dark:bg-md-darkPrimaryContainer text-md-onPrimaryContainer dark:text-white flex items-center justify-center text-lg"><i class="fas fa-plus"></i></button>
+                            <button onclick="changeLnd(1)" class="w-12 h-12 rounded-2xl bg-md-primary dark:bg-md-darkPrimary text-md-onPrimary dark:text-black flex items-center justify-center text-lg"><i class="fas fa-plus"></i></button>
                         </div>
                     </div>
 
-                    <div id="results" class="hidden space-y-6 pt-6 border-t border-md-outline/10">
+                    <div id="results" class="hidden space-y-6 pt-6 border-t border-md-primary/10 dark:border-md-darkPrimary/20">
                         <div class="format-container">
                             <div id="toggleSlider" class="toggle-slider"></div>
                             <button id="fmtHHMM" onclick="setFormat('HH:MM')" class="format-btn active">HH:MM</button>
@@ -287,17 +285,17 @@
                         </div>
 
                         <div class="grid grid-cols-2 gap-4">
-                            <div class="p-5 rounded-3xl bg-white dark:bg-white/5 border border-md-outline/10 text-center">
+                            <div class="p-5 rounded-3xl bg-white dark:bg-black border border-md-primary/10 dark:border-md-darkPrimary/30 text-center">
                                 <p class="text-[11px] font-bold opacity-60 uppercase mb-1">Actual FDP</p>
                                 <p id="resActual" class="text-2xl font-bold mono">--:--</p>
                             </div>
-                            <div class="p-5 rounded-3xl bg-white dark:bg-white/5 border border-md-outline/10 text-center">
+                            <div class="p-5 rounded-3xl bg-white dark:bg-black border border-md-primary/10 dark:border-md-darkPrimary/30 text-center">
                                 <p class="text-[11px] font-bold opacity-60 uppercase mb-1">Max Allowed</p>
-                                <p id="resMax" class="text-2xl font-bold mono text-md-primary dark:text-md-darkPrimary">--:--</p>
+                                <p id="resMax" class="text-2xl font-bold mono text-md-onPrimaryContainer dark:text-md-darkPrimary">--:--</p>
                             </div>
                         </div>
 
-                        <div class="p-5 rounded-3xl bg-md-primary/5 dark:bg-md-darkPrimary/5 space-y-3">
+                        <div class="p-5 rounded-3xl bg-md-primary/5 dark:bg-md-darkPrimary/10 space-y-3">
                             <div class="flex justify-between">
                                 <span class="opacity-70 font-medium">Base FDP Limit:</span>
                                 <span id="resBase" class="font-bold text-lg mono">--:--</span>
@@ -313,17 +311,17 @@
         </div>
 
         <div class="m3-card p-6 md:p-8">
-            <h3 class="text-[13px] font-bold opacity-60 uppercase tracking-[0.2em] mb-6 text-center">DGCA Reference Table</h3>
+            <h3 class="text-[13px] font-bold opacity-60 uppercase tracking-[0.2em] mb-6 text-center text-md-onPrimaryContainer dark:text-md-darkPrimary">DGCA Reference Table</h3>
             <div class="space-y-1">
-                <div class="table-row-grid font-bold opacity-40 border-b border-md-outline/10 mb-2 text-sm">
+                <div class="table-row-grid font-bold opacity-40 border-b border-md-primary/10 dark:border-md-darkPrimary/40 mb-2 text-sm">
                     <span>LDG</span><span>MAX FT</span><span>MAX FDP</span>
                 </div>
                 <div class="table-row-grid text-base md:text-lg"><span>1</span><span>10:00</span><span class="font-bold text-md-primary dark:text-md-darkPrimary">13:00</span></div>
-                <div class="table-row-grid bg-md-primary/5 rounded-xl text-base md:text-lg"><span>2</span><span>09:00</span><span class="font-bold text-md-primary dark:text-md-darkPrimary">13:00</span></div>
+                <div class="table-row-grid bg-md-surfaceVariant dark:bg-md-darkPrimary/10 rounded-xl text-base md:text-lg"><span>2</span><span>09:00</span><span class="font-bold text-md-primary dark:text-md-darkPrimary">13:00</span></div>
                 <div class="table-row-grid text-base md:text-lg"><span>3</span><span>08:00</span><span class="font-bold text-md-primary dark:text-md-darkPrimary">12:30</span></div>
-                <div class="table-row-grid bg-md-primary/5 rounded-xl text-base md:text-lg"><span>4</span><span>08:00</span><span class="font-bold text-md-primary dark:text-md-darkPrimary">12:00</span></div>
+                <div class="table-row-grid bg-md-surfaceVariant dark:bg-md-primary/5 dark:bg-md-darkPrimary/10 rounded-xl text-base md:text-lg"><span>4</span><span>08:00</span><span class="font-bold text-md-primary dark:text-md-darkPrimary">12:00</span></div>
                 <div class="table-row-grid text-base md:text-lg"><span>5</span><span>08:00</span><span class="font-bold text-md-primary dark:text-md-darkPrimary">11:30</span></div>
-                <div class="table-row-grid bg-md-primary/5 rounded-xl text-base md:text-lg"><span>6</span><span>08:00</span><span class="font-bold text-md-primary dark:text-md-darkPrimary">11:00</span></div>
+                <div class="table-row-grid bg-md-surfaceVariant dark:bg-md-primary/5 dark:bg-md-darkPrimary/10 rounded-xl text-base md:text-lg"><span>6</span><span>08:00</span><span class="font-bold text-md-primary dark:text-md-darkPrimary">11:00</span></div>
             </div>
         </div>
     </main>
@@ -417,7 +415,6 @@
             let e = rawE; 
             if(e < s) e += 24;
 
-            // WOCL Error Logic: If both Report and Chocks are in 02:00-06:00 window
             const inWoclRange = (t) => (t >= 2.0 && t <= 6.0);
             if(inWoclRange(s) && inWoclRange(rawE)){
                 document.getElementById('errorModal').classList.add('active');
@@ -434,15 +431,13 @@
             
             let p = 0;
             if (s >= 2.0 && s <= 6.0) { 
-                // Full penalty logic for reporting within WOCL
                 p = Math.min(Math.min(e, 6.0) - s, 2.0); 
             } else {
-                // Requested 50% encroachment logic
                 let overlap = Math.max(0, Math.min(e, 6.0) - Math.max(s, 2.0)) + Math.max(0, Math.min(e, 30.0) - Math.max(s, 26.0));
                 if (overlap > 0) {
                     let totalMins = Math.round(overlap * 60);
                     let halfMins = totalMins / 2;
-                    let finalMins = Math.floor(halfMins); // Ignore decimals
+                    let finalMins = Math.floor(halfMins); 
                     p = finalMins / 60;
                 }
             }
@@ -460,10 +455,10 @@
             
             const box = document.getElementById('statusBox'), tit = document.getElementById('statusTitle'), ic = document.getElementById('statusIcon');
             if(iL){
-                box.className = "p-5 rounded-3xl bg-green-500/10 border border-green-500/20 flex items-center gap-4 text-green-600 dark:text-green-400";
+                box.className = "p-5 rounded-3xl bg-green-500/10 border border-green-500/20 flex items-center gap-4 text-green-600 dark:text-md-darkPrimary";
                 tit.innerText = "Legal"; ic.innerHTML = '<i class="fas fa-check-circle"></i>';
             } else {
-                box.className = "p-5 rounded-3xl bg-red-500/10 border border-red-500/20 flex items-center gap-4 text-red-600 dark:text-red-400";
+                box.className = "p-5 rounded-3xl bg-red-500/10 border border-red-500/20 flex items-center gap-4 text-red-600 dark:text-md-accent";
                 tit.innerText = "Illegal"; ic.innerHTML = '<i class="fas fa-triangle-exclamation"></i>';
             }
             lastResult={report:r.value, chocks:c.value, actual:formatValue(aF), max:formatValue(al), status: iL?"✅ LEGAL":"❌ ILLEGAL"};
@@ -497,3 +492,4 @@
     </script>
 </body>
 </html>
+
